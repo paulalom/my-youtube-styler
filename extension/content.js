@@ -262,7 +262,11 @@
 
     return {
       renderer,
-      rowHost: renderer.querySelector("#container") || renderer.querySelector("#chips-wrapper") || renderer
+      rowHost:
+        renderer.querySelector("#chips-content") ||
+        renderer.querySelector("#container") ||
+        renderer.querySelector("#chips-wrapper") ||
+        renderer
     };
   }
 

@@ -111,12 +111,19 @@ ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row {
 
 ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #chips,
 ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #chips-wrapper,
+ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #chips-content,
 ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #scroll-container,
 ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #chip-container,
 ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row #chips {
   flex: 1 1 auto !important;
   max-width: 100% !important;
   min-width: 0 !important;
+}
+
+ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #left-arrow,
+ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #right-arrow,
+ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row > #filter {
+  flex: 0 0 auto !important;
 }
 
 .my-youtube-styler-filter-bar {
