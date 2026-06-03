@@ -18,6 +18,7 @@
     hidePaidVideos: true,
     hideShorts: true,
     hideYouMightLike: true,
+    hidePlaylists: false,
     rememberSeenVideos: false
   };
 
@@ -25,7 +26,8 @@
     compactLayout: "my-youtube-styler-compact",
     hidePaidVideos: "my-youtube-styler-hide-paid",
     hideShorts: "my-youtube-styler-hide-shorts",
-    hideYouMightLike: "my-youtube-styler-hide-you-might-like"
+    hideYouMightLike: "my-youtube-styler-hide-you-might-like",
+    hidePlaylists: "my-youtube-styler-hide-playlists"
   };
 
   const dateFilters = [
