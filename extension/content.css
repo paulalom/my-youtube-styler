@@ -1,58 +1,74 @@
-ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
   --ytd-rich-grid-items-per-row: 6 !important;
   --ytd-rich-grid-item-max-width: 230px !important;
 }
 
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer {
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer {
   margin-left: 6px !important;
   margin-right: 6px !important;
   margin-bottom: 30px !important;
 }
 
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title-link,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer h3,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle .ytAttributedStringHost {
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelAvatar,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #avatar-link {
+  margin-right: 8px !important;
+}
+
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytSpecAvatarShapeAvatarSizeMedium,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer yt-img-shadow#avatar {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title-link,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer h3,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle .ytAttributedStringHost {
   font-size: calc(1.6rem - 2pt) !important;
   line-height: calc(2.2rem - 2pt) !important;
 }
 
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer ytd-channel-name,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line span,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelHost,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText *,
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelDelimiter {
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer ytd-channel-name,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line span,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelHost,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText *,
+html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelDelimiter {
   font-size: calc(1.4rem - 2pt) !important;
   line-height: calc(2rem - 2pt) !important;
 }
 
-ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
-ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
-ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(a[href^="/shorts"]),
-ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-feed-nudge-renderer),
-ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(yt-chip-cloud-renderer) {
+html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
+html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(a[href^="/shorts"]) {
   display: none !important;
 }
 
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-members-only),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--type-members-only),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--membership),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([overlay-style*="MEMBERS" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Members only" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Members only" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-premium),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([class*="premium" i].ytd-badge-supported-renderer),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="YouTube Premium" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="YouTube Premium" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Buy or rent" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Buy or rent" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Purchase" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Purchase" i]),
+html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-feed-nudge-renderer),
+html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(yt-chip-cloud-renderer),
+html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([aria-label*="You might like" i]),
+html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([title*="You might like" i]) {
+  display: none !important;
+}
+
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-members-only),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--type-members-only),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--membership),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([overlay-style*="MEMBERS" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Members only" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Members only" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-premium),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([class*="premium" i].ytd-badge-supported-renderer),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="YouTube Premium" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="YouTube Premium" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Buy or rent" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Buy or rent" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Purchase" i]),
+html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Purchase" i]),
 ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-date-hidden],
 ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-view-hidden] {
   display: none !important;

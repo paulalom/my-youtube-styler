@@ -1,11 +1,27 @@
 (() => {
+  const extensionApi = globalThis.browser || globalThis.chrome;
   const FILTER_ID = "my-youtube-styler-filter-bar";
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
+  const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
   const DAY = 24 * 60 * 60 * 1000;
+
+  const defaultSettings = {
+    compactLayout: true,
+    hidePaidVideos: true,
+    hideShorts: true,
+    hideYouMightLike: true
+  };
+
+  const settingClasses = {
+    compactLayout: "my-youtube-styler-compact",
+    hidePaidVideos: "my-youtube-styler-hide-paid",
+    hideShorts: "my-youtube-styler-hide-shorts",
+    hideYouMightLike: "my-youtube-styler-hide-you-might-like"
+  };
 
   const dateFilters = [
     { key: "all", label: "All", maxAgeMs: Infinity },
@@ -26,6 +42,7 @@
     { key: "1b", label: "1B", value: 1_000_000_000 }
   ];
 
+  let settings = { ...defaultSettings };
   let selectedDateFilter = readStoredChoice(DATE_STORAGE_KEY, dateFilters, "all");
   let selectedMinViewsFilter = readStoredChoice(MIN_VIEWS_STORAGE_KEY, viewFilters, "all");
   let selectedMaxViewsFilter = readStoredChoice(MAX_VIEWS_STORAGE_KEY, viewFilters, "all");
@@ -45,6 +62,58 @@
       sessionStorage.setItem(storageKey, key);
     } catch {
       // The filters still work for the current page when sessionStorage is unavailable.
+    }
+  }
+
+  function normalizeSettings(rawSettings) {
+    return {
+      ...defaultSettings,
+      ...(rawSettings && typeof rawSettings === "object" ? rawSettings : {})
+    };
+  }
+
+  function getStoredSettings() {
+    if (!extensionApi?.storage?.local) {
+      return Promise.resolve({});
+    }
+
+    if (globalThis.browser?.storage?.local) {
+      return browser.storage.local.get(SETTINGS_STORAGE_KEY);
+    }
+
+    return new Promise((resolve) => {
+      chrome.storage.local.get(SETTINGS_STORAGE_KEY, resolve);
+    });
+  }
+
+  function watchSettings() {
+    if (!extensionApi?.storage?.onChanged) {
+      return;
+    }
+
+    extensionApi.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local" || !changes[SETTINGS_STORAGE_KEY]) {
+        return;
+      }
+
+      settings = normalizeSettings(changes[SETTINGS_STORAGE_KEY].newValue);
+      applySettingsClasses();
+      scheduleApply();
+    });
+  }
+
+  async function loadSettings() {
+    const result = await getStoredSettings();
+    settings = normalizeSettings(result[SETTINGS_STORAGE_KEY]);
+    applySettingsClasses();
+    scheduleApply();
+  }
+
+  function applySettingsClasses() {
+    const root = document.documentElement;
+
+    for (const [key, className] of Object.entries(settingClasses)) {
+      root.classList.toggle(className, Boolean(settings[key]));
     }
   }
 
@@ -373,6 +442,8 @@
   function applyHomepageTweaks() {
     const home = getHome();
 
+    applySettingsClasses();
+
     if (!home) {
       return;
     }
@@ -393,6 +464,10 @@
       applyHomepageTweaks();
     });
   }
+
+  applySettingsClasses();
+  watchSettings();
+  loadSettings();
 
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });

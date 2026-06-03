@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My YouTube Styler</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header class="header">
+      <img class="header__icon" src="icons/icon-48.png" alt="">
+      <div>
+        <h1>My YouTube Styler</h1>
+        <p>Homepage tweaks</p>
+      </div>
+    </header>
+
+    <main class="settings" aria-label="Styler settings">
+      <label class="setting">
+        <span class="setting__text">
+          <strong>Compact thumbnails, icons, and text</strong>
+          <small>Use 6 per row with smaller avatars, titles, and metadata.</small>
+        </span>
+        <input type="checkbox" data-setting="compactLayout">
+      </label>
+
+      <label class="setting">
+        <span class="setting__text">
+          <strong>Hide paid/member videos</strong>
+          <small>Hide common Premium, member-only, buy, rent, and purchase badges.</small>
+        </span>
+        <input type="checkbox" data-setting="hidePaidVideos">
+      </label>
+
+      <label class="setting">
+        <span class="setting__text">
+          <strong>Hide Shorts</strong>
+          <small>Remove Shorts shelves from the homepage feed.</small>
+        </span>
+        <input type="checkbox" data-setting="hideShorts">
+      </label>
+
+      <label class="setting">
+        <span class="setting__text">
+          <strong>Hide You might like</strong>
+          <small>Remove topic and recommendation nudge sections.</small>
+        </span>
+        <input type="checkbox" data-setting="hideYouMightLike">
+      </label>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

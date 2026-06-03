@@ -5,8 +5,13 @@ A local Firefox WebExtension for small YouTube homepage tweaks.
 ## What It Does
 
 - Shows 6 videos per row on the YouTube homepage.
-- Shrinks title and metadata text slightly.
+- Shrinks card avatars, title text, and metadata text slightly.
 - Hides Shorts, topic shelves, and common paid/member-only badge variants.
+- Adds toolbar-popup toggles for:
+  - Compact thumbnails, icons, and text
+  - Hide paid/member videos
+  - Hide Shorts
+  - Hide You might like sections
 - Adds a homepage date filter beside the category chips:
   - All
   - 7 days
@@ -36,9 +41,11 @@ Temporary add-ons are unloaded when Firefox restarts. For permanent use, package
 
 ## Notes
 
+- The old Firefox profile `userContent.css` tweaks were migrated into this extension.
 - The date filter reads the visible relative age text on homepage video cards, such as `3 hours ago` or `2 weeks ago`.
 - The view filters read visible homepage metadata, such as `71 views`, `1.5K views`, or `1.5 million views`.
 - Videos with unrecognized or missing age/view text are left visible.
 - Selected filters are stored in the YouTube tab session only.
+- Toolbar-popup settings are stored in Firefox extension storage.
 - No network requests are made by the extension.
 - Do not initialize Git inside your Firefox profile folder. Keep browser profile data out of this repo.
