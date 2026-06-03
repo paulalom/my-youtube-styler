@@ -54,10 +54,21 @@ function applyToForm(settings) {
   }
 }
 
+function applyVersionLabel() {
+  const version = extensionApi?.runtime?.getManifest?.().version;
+  const versionLabel = document.getElementById("extension-version");
+
+  if (version && versionLabel) {
+    versionLabel.textContent = `v${version}`;
+  }
+}
+
 async function initializePopup() {
   if (!extensionApi?.storage?.local) {
     return;
   }
+
+  applyVersionLabel();
 
   const result = await getStoredSettings();
   let settings = normalizeSettings(result[SETTINGS_STORAGE_KEY]);
