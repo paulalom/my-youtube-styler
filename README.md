@@ -53,6 +53,8 @@ Temporary add-ons are unloaded when Firefox restarts. For permanent use, package
 - The Explore more topics toggle defaults to on.
 - The playlist toggle defaults to off.
 - Seen-video history stores homepage video IDs with last-seen timestamps, hides them on the next Home load or refresh, and prunes entries older than 7 days.
+- Seen-video history is never uploaded anywhere.
 - The popup includes a clear-history button for seen-video history.
+- The popup includes a reset button for inline date/view filters.
 - No network requests are made by the extension.
 - Do not initialize Git inside your Firefox profile folder. Keep browser profile data out of this repo.

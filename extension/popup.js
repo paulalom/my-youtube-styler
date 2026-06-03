@@ -1,6 +1,7 @@
 const extensionApi = globalThis.browser || globalThis.chrome;
 const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
 const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
+const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
 
 const defaultSettings = {
   compactLayout: true,
@@ -76,6 +77,7 @@ async function initializePopup() {
   }
 
   document.getElementById("clear-history")?.addEventListener("click", clearSeenHistory);
+  document.getElementById("reset-filters")?.addEventListener("click", resetInlineFilters);
 }
 
 async function clearSeenHistory() {
@@ -101,6 +103,29 @@ async function clearSeenHistory() {
   }
 }
 
+async function resetInlineFilters() {
+  const button = document.getElementById("reset-filters");
+  const status = document.getElementById("reset-filters-status");
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Resetting";
+  }
+
+  await setLocal({ [RESET_FILTERS_STORAGE_KEY]: Date.now() });
+
+  if (status) {
+    status.textContent = "Date and view filters reset to All.";
+  }
+
+  if (button) {
+    button.textContent = "Reset";
+    window.setTimeout(() => {
+      button.disabled = false;
+    }, 500);
+  }
+}
+
 async function updateSeenHistoryStatus() {
   const status = document.getElementById("clear-history-status");
   if (!status) {
@@ -113,8 +138,8 @@ async function updateSeenHistoryStatus() {
 
   status.textContent =
     count === 0
-      ? "History expires automatically after 7 days."
-      : `${count} remembered. History expires automatically after 7 days.`;
+      ? "History expires automatically after 7 days and is never uploaded anywhere."
+      : `${count} remembered. History expires automatically after 7 days and is never uploaded anywhere.`;
 }
 
 initializePopup();

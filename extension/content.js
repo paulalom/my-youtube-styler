@@ -11,6 +11,7 @@
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
   const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
   const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
+  const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
   const DAY = 24 * 60 * 60 * 1000;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
@@ -154,6 +155,10 @@
         updateHiddenSeenVideoIds();
         disconnectSeenObserver();
         scheduleApply();
+      }
+
+      if (changes[RESET_FILTERS_STORAGE_KEY]) {
+        resetInlineFilters();
       }
     });
   }
@@ -420,6 +425,16 @@
     if (maxSelect) {
       maxSelect.value = selectedMaxViewsFilter;
     }
+  }
+
+  function resetInlineFilters() {
+    selectedDateFilter = "all";
+    selectedMinViewsFilter = "all";
+    selectedMaxViewsFilter = "all";
+    storeChoice(DATE_STORAGE_KEY, selectedDateFilter);
+    storeChoice(MIN_VIEWS_STORAGE_KEY, selectedMinViewsFilter);
+    storeChoice(MAX_VIEWS_STORAGE_KEY, selectedMaxViewsFilter);
+    scheduleApply();
   }
 
   function getActiveDateFilter() {
