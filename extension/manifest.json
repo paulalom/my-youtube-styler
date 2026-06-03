@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "My YouTube Styler",
+  "version": "0.1.0",
+  "description": "Local YouTube homepage styling and filtering tweaks.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "my-youtube-styler@local"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "css": ["content.css"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+

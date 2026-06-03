@@ -1,0 +1,6 @@
+.web-extension-id
+web-ext-artifacts/
+*.zip
+*.xpi
+*.log
+
