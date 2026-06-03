@@ -69,6 +69,7 @@
   const pendingSeenVideoIds = new Set();
   let observedSeenCards = new WeakMap();
   let activeFeedKey = null;
+  let chipBarRefreshScheduled = false;
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -303,9 +304,9 @@
     return {
       renderer,
       rowHost:
-        renderer.querySelector("#chips-content") ||
-        renderer.querySelector("#container") ||
         renderer.querySelector("#chips-wrapper") ||
+        renderer.querySelector("#container") ||
+        renderer.querySelector("#chips-content") ||
         renderer
     };
   }
@@ -402,7 +403,8 @@
   function ensureFilterRowLayout(rowHost) {
     let chipArea = rowHost.querySelector(`:scope > #${CHIP_AREA_ID}`);
     let filterArea = rowHost.querySelector(`:scope > #${FILTER_AREA_ID}`);
-    const chipNodes = ["left-arrow", "filter", "scroll-container", "right-arrow"]
+    let layoutChanged = false;
+    const chipNodes = ["left-arrow", "chips-content", "filter", "scroll-container", "chip-container", "right-arrow"]
       .map((id) => rowHost.querySelector(`:scope > #${id}`) || chipArea?.querySelector(`:scope > #${id}`))
       .filter(Boolean);
 
@@ -415,6 +417,7 @@
       chipArea.id = CHIP_AREA_ID;
       chipArea.className = "my-youtube-styler-chip-area";
       rowHost.insertBefore(chipArea, chipNodes[0]);
+      layoutChanged = true;
     }
 
     if (!filterArea) {
@@ -422,15 +425,33 @@
       filterArea.id = FILTER_AREA_ID;
       filterArea.className = "my-youtube-styler-filter-area";
       rowHost.appendChild(filterArea);
+      layoutChanged = true;
     }
 
     for (const chipNode of chipNodes) {
       if (chipNode.parentElement !== chipArea) {
         chipArea.appendChild(chipNode);
+        layoutChanged = true;
       }
     }
 
+    if (layoutChanged) {
+      scheduleChipBarRefresh();
+    }
+
     return { chipArea, filterArea };
+  }
+
+  function scheduleChipBarRefresh() {
+    if (chipBarRefreshScheduled) {
+      return;
+    }
+
+    chipBarRefreshScheduled = true;
+    window.requestAnimationFrame(() => {
+      chipBarRefreshScheduled = false;
+      window.dispatchEvent(new Event("resize"));
+    });
   }
 
   function createDateGroup() {

@@ -123,28 +123,48 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 }
 
 .my-youtube-styler-chip-area {
-  flex: 1 1 50%;
-  max-width: 50%;
+  flex: 0 1 calc(50% - 6px);
+  max-width: calc(50% - 6px);
+  overflow: hidden;
+  position: relative;
+  width: calc(50% - 6px);
 }
 
 .my-youtube-styler-filter-area {
-  flex: 1 1 50%;
+  flex: 0 1 calc(50% - 6px);
   justify-content: flex-end;
-  max-width: 50%;
+  max-width: calc(50% - 6px);
+  width: calc(50% - 6px);
 }
 
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #chips-content,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #filter,
 .my-youtube-styler-feed-page .my-youtube-styler-chip-area > #scroll-container,
 .my-youtube-styler-feed-page .my-youtube-styler-chip-area > #chip-container,
-.my-youtube-styler-feed-page .my-youtube-styler-chip-area #chips {
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area #scroll-container,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area #chip-container {
+  box-sizing: border-box !important;
   flex: 1 1 auto !important;
   max-width: 100% !important;
   min-width: 0 !important;
+  width: 100% !important;
+}
+
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area #chips {
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+  max-width: none !important;
+  min-width: max-content !important;
+  width: max-content !important;
 }
 
 .my-youtube-styler-feed-page .my-youtube-styler-chip-area > #left-arrow,
-.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #right-arrow,
-.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #filter {
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #right-arrow {
   flex: 0 0 auto !important;
+  left: auto !important;
+  position: relative !important;
+  right: auto !important;
+  top: auto !important;
 }
 
 .my-youtube-styler-subscriptions-filter-anchor {
