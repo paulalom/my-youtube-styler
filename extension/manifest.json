@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "My YouTube Styler",
-  "version": "0.6.5",
-  "description": "Local YouTube homepage styling and filtering tweaks.",
+  "version": "0.7.0",
+  "description": "Local YouTube feed styling and filtering tweaks.",
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon-16.png",

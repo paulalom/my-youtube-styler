@@ -3,6 +3,7 @@
   const FILTER_ID = "my-youtube-styler-filter-bar";
   const CHIP_AREA_ID = "my-youtube-styler-chip-area";
   const FILTER_AREA_ID = "my-youtube-styler-filter-area";
+  const SUBSCRIPTIONS_FILTER_ANCHOR_ID = "my-youtube-styler-subscriptions-filter-anchor";
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
@@ -67,6 +68,7 @@
   let seenObserver = null;
   const pendingSeenVideoIds = new Set();
   let observedSeenCards = new WeakMap();
+  let activeFeedKey = null;
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -148,7 +150,7 @@
 
         if (Object.keys(changedHistory).length === 0) {
           discardPendingSeenHistory();
-          currentPageSeenVideoIds = getCurrentHomeVideoIds();
+          currentPageSeenVideoIds = getCurrentFeedVideoIds();
         }
 
         seenHistory = pruneSeenHistory(changedHistory);
@@ -230,15 +232,15 @@
     }
   }
 
-  function getCurrentHomeVideoIds() {
-    const home = getHome();
+  function getCurrentFeedVideoIds() {
+    const feedPage = getFeedPage();
     const videoIds = new Set();
 
-    if (!home) {
+    if (!feedPage) {
       return videoIds;
     }
 
-    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
       const videoId = getCardVideoId(card);
 
       if (videoId) {
@@ -257,12 +259,43 @@
     }
   }
 
-  function getHome() {
-    return document.querySelector('ytd-browse[page-subtype="home"]');
+  function getSupportedFeedKey() {
+    if (location.pathname === "/") {
+      return "home";
+    }
+
+    if (location.pathname === "/feed/subscriptions") {
+      return "subscriptions";
+    }
+
+    return null;
   }
 
-  function getFilterRowTarget(home) {
-    const renderer = home.querySelector("ytd-feed-filter-chip-bar-renderer, yt-chip-cloud-renderer");
+  function isSubscriptionsFeedPath() {
+    return getSupportedFeedKey() === "subscriptions";
+  }
+
+  function getFeedPage() {
+    const feedKey = getSupportedFeedKey();
+    const feedPage = feedKey ? document.querySelector("ytd-browse") : null;
+
+    for (const previousFeedPage of document.querySelectorAll(".my-youtube-styler-feed-page")) {
+      if (previousFeedPage !== feedPage) {
+        previousFeedPage.classList.remove("my-youtube-styler-feed-page");
+        delete previousFeedPage.dataset.myYoutubeStylerFeed;
+      }
+    }
+
+    if (feedPage) {
+      feedPage.classList.add("my-youtube-styler-feed-page");
+      feedPage.dataset.myYoutubeStylerFeed = feedKey;
+    }
+
+    return feedPage;
+  }
+
+  function getFilterRowTarget(feedPage) {
+    const renderer = feedPage.querySelector("ytd-feed-filter-chip-bar-renderer, yt-chip-cloud-renderer");
     if (!renderer) {
       return null;
     }
@@ -277,27 +310,43 @@
     };
   }
 
-  function ensureFilterControls(home) {
-    const filterRowTarget = getFilterRowTarget(home);
-    if (!filterRowTarget) {
+  function ensureFilterControls(feedPage) {
+    const shouldUseSubscriptionsAnchor = isSubscriptionsFeedPath();
+    const filterRowTarget = shouldUseSubscriptionsAnchor ? null : getFilterRowTarget(feedPage);
+    let controls = document.getElementById(FILTER_ID);
+
+    if (!filterRowTarget && !shouldUseSubscriptionsAnchor) {
+      if (controls) {
+        updateControlState(controls);
+      }
+
       return;
     }
-
-    const { renderer, rowHost } = filterRowTarget;
-    let controls = document.getElementById(FILTER_ID);
 
     if (!controls) {
       controls = document.createElement("div");
       controls.id = FILTER_ID;
       controls.className = "my-youtube-styler-filter-bar";
       controls.setAttribute("role", "group");
-      controls.setAttribute("aria-label", "Filter homepage videos");
+      controls.setAttribute("aria-label", "Filter feed videos");
 
       controls.appendChild(createDateGroup());
       controls.appendChild(createViewSelectGroup("Min views", "min"));
       controls.appendChild(createViewSelectGroup("Max views", "max"));
     }
 
+    if (shouldUseSubscriptionsAnchor) {
+      const subscriptionsAnchor = ensureSubscriptionsFilterAnchor(feedPage);
+
+      if (subscriptionsAnchor && controls.parentElement !== subscriptionsAnchor) {
+        subscriptionsAnchor.appendChild(controls);
+      }
+
+      updateControlState(controls);
+      return;
+    }
+
+    const { renderer, rowHost } = filterRowTarget;
     renderer.classList.add("my-youtube-styler-filter-renderer");
     rowHost.classList.add("my-youtube-styler-filter-row");
 
@@ -311,6 +360,43 @@
     }
 
     updateControlState(controls);
+  }
+
+  function ensureSubscriptionsFilterAnchor(feedPage) {
+    let anchor = document.getElementById(SUBSCRIPTIONS_FILTER_ANCHOR_ID);
+
+    if (!anchor) {
+      anchor = document.createElement("div");
+      anchor.id = SUBSCRIPTIONS_FILTER_ANCHOR_ID;
+      anchor.className = "my-youtube-styler-subscriptions-filter-anchor";
+    }
+
+    const mount =
+      feedPage.querySelector("ytd-rich-grid-renderer") ||
+      feedPage.querySelector("ytd-section-list-renderer") ||
+      feedPage.querySelector("#contents") ||
+      feedPage;
+
+    if (anchor.parentElement !== mount) {
+      const header = mount.querySelector(":scope > #header");
+      mount.insertBefore(anchor, header?.nextSibling || mount.firstChild);
+    }
+
+    return anchor;
+  }
+
+  function syncActiveFeed() {
+    const nextFeedKey = getSupportedFeedKey();
+
+    if (nextFeedKey !== activeFeedKey) {
+      flushSeenHistory();
+      currentPageSeenVideoIds.clear();
+      updateHiddenSeenVideoIds();
+      disconnectSeenObserver();
+      activeFeedKey = nextFeedKey;
+    }
+
+    return nextFeedKey;
   }
 
   function ensureFilterRowLayout(rowHost) {
@@ -365,7 +451,7 @@
       button.addEventListener("click", () => {
         selectedDateFilter = filter.key;
         storeChoice(DATE_STORAGE_KEY, filter.key);
-        applyHomepageTweaks();
+        applyFeedTweaks();
       });
       group.appendChild(button);
     }
@@ -402,7 +488,7 @@
         storeChoice(MAX_VIEWS_STORAGE_KEY, select.value);
       }
 
-      applyHomepageTweaks();
+      applyFeedTweaks();
     });
 
     group.appendChild(select);
@@ -706,10 +792,10 @@
     }
   }
 
-  function applyDateFilter(home) {
+  function applyDateFilter(feedPage) {
     const activeDateFilter = getActiveDateFilter();
 
-    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
       if (activeDateFilter.key === "all") {
         card.removeAttribute(DATE_HIDDEN_ATTR);
         continue;
@@ -726,11 +812,11 @@
     }
   }
 
-  function applyViewFilter(home) {
+  function applyViewFilter(feedPage) {
     const minViews = getActiveViewFilter(selectedMinViewsFilter).value;
     const maxViews = getActiveViewFilter(selectedMaxViewsFilter).value;
 
-    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
       if (minViews === null && maxViews === null) {
         card.removeAttribute(VIEW_HIDDEN_ATTR);
         continue;
@@ -749,11 +835,11 @@
     }
   }
 
-  function applySeenHistoryFilter(home) {
+  function applySeenHistoryFilter(feedPage) {
     if (!settings.rememberSeenVideos) {
       disconnectSeenObserver();
 
-      for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+      for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
         card.removeAttribute(SEEN_HIDDEN_ATTR);
       }
 
@@ -762,7 +848,7 @@
 
     ensureSeenObserver();
 
-    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
       const videoId = getCardVideoId(card);
 
       if (!videoId) {
@@ -812,19 +898,21 @@
     observedSeenCards = new WeakMap();
   }
 
-  function applyHomepageTweaks() {
-    const home = getHome();
+  function applyFeedTweaks() {
+    syncActiveFeed();
+
+    const feedPage = getFeedPage();
 
     applySettingsClasses();
 
-    if (!home) {
+    if (!feedPage) {
       return;
     }
 
-    ensureFilterControls(home);
-    applyDateFilter(home);
-    applyViewFilter(home);
-    applySeenHistoryFilter(home);
+    ensureFilterControls(feedPage);
+    applyDateFilter(feedPage);
+    applyViewFilter(feedPage);
+    applySeenHistoryFilter(feedPage);
   }
 
   function scheduleApply() {
@@ -835,18 +923,12 @@
     scheduled = true;
     window.requestAnimationFrame(() => {
       scheduled = false;
-      applyHomepageTweaks();
+      applyFeedTweaks();
     });
   }
 
   function handleNavigateFinish() {
-    if (!getHome()) {
-      flushSeenHistory();
-      currentPageSeenVideoIds.clear();
-      updateHiddenSeenVideoIds();
-      disconnectSeenObserver();
-    }
-
+    syncActiveFeed();
     scheduleApply();
   }
 

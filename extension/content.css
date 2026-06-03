@@ -1,111 +1,111 @@
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-grid-renderer {
   --ytd-rich-grid-items-per-row: 6 !important;
   --ytd-rich-grid-item-max-width: 230px !important;
 }
 
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer {
   margin-left: 6px !important;
   margin-right: 6px !important;
   margin-bottom: 30px !important;
 }
 
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelAvatar,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #avatar-link {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelAvatar,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #avatar-link {
   margin-right: 8px !important;
 }
 
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytSpecAvatarShapeAvatarSizeMedium,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer yt-img-shadow#avatar {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytSpecAvatarShapeAvatarSizeMedium,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer yt-img-shadow#avatar {
   height: 32px !important;
   width: 32px !important;
 }
 
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #video-title-link,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer h3,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytLockupMetadataViewModelTitle .ytAttributedStringHost {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #video-title,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #video-title-link,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer h3,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelTitle,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelTitle .ytAttributedStringHost {
   font-size: calc(1.6rem - 2pt) !important;
   line-height: calc(2.2rem - 2pt) !important;
 }
 
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer ytd-channel-name,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer #metadata-line span,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelHost,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText *,
-html.my-youtube-styler-compact ytd-browse[page-subtype="home"] ytd-rich-item-renderer .ytContentMetadataViewModelDelimiter {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer ytd-channel-name,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line span,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelHost,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataText *,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelDelimiter {
   font-size: calc(1.4rem - 2pt) !important;
   line-height: calc(2rem - 2pt) !important;
 }
 
-html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
-html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
-html.my-youtube-styler-hide-shorts ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(a[href^="/shorts"]) {
+html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
+html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href^="/shorts"]) {
   display: none !important;
 }
 
-html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-feed-nudge-renderer),
-html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([aria-label*="You might like" i]),
-html.my-youtube-styler-hide-you-might-like ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([title*="You might like" i]) {
+html.my-youtube-styler-hide-you-might-like .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-feed-nudge-renderer),
+html.my-youtube-styler-hide-you-might-like .my-youtube-styler-feed-page ytd-rich-section-renderer:has([aria-label*="You might like" i]),
+html.my-youtube-styler-hide-you-might-like .my-youtube-styler-feed-page ytd-rich-section-renderer:has([title*="You might like" i]) {
   display: none !important;
 }
 
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(yt-chip-cloud-renderer),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-chips-shelf-with-video-shelf-renderer),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(chips-shelf-view-model),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(.ytdChipsShelfWithVideoShelfRendererHost),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(.ytChipsShelfViewModelHost),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-chips-shelf-with-video-shelf-renderer):has(.ytShelfHeaderLayoutTitle),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([aria-label*="Explore more topics" i]),
-html.my-youtube-styler-hide-explore-more-topics ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has([title*="Explore more topics" i]) {
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(yt-chip-cloud-renderer),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-chips-shelf-with-video-shelf-renderer),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(chips-shelf-view-model),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(.ytdChipsShelfWithVideoShelfRendererHost),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(.ytChipsShelfViewModelHost),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-chips-shelf-with-video-shelf-renderer):has(.ytShelfHeaderLayoutTitle),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has([aria-label*="Explore more topics" i]),
+html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd-rich-section-renderer:has([title*="Explore more topics" i]) {
   display: none !important;
 }
 
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(ytd-playlist-renderer),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(ytd-grid-playlist-renderer),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(ytd-compact-playlist-renderer),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(a[href^="/playlist"]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(a[href*="/playlist?"]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(a[href*="list="]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="playlist" i]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="playlist" i]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-playlist-renderer),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(ytd-grid-playlist-renderer),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(a[href^="/playlist"]),
-html.my-youtube-styler-hide-playlists ytd-browse[page-subtype="home"] ytd-rich-section-renderer:has(a[href*="/playlist?"]) {
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-playlist-renderer),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-grid-playlist-renderer),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-compact-playlist-renderer),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/playlist"]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="/playlist?"]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="list="]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="playlist" i]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="playlist" i]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-playlist-renderer),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-grid-playlist-renderer),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href^="/playlist"]),
+html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href*="/playlist?"]) {
   display: none !important;
 }
 
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-members-only),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--type-members-only),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.yt-badge-shape--membership),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([overlay-style*="MEMBERS" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Members only" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Members only" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has(.badge-style-type-premium),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([class*="premium" i].ytd-badge-supported-renderer),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="YouTube Premium" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="YouTube Premium" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Buy or rent" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Buy or rent" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Purchase" i]),
-html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Purchase" i]),
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-date-hidden],
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-view-hidden],
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-seen-hidden] {
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.badge-style-type-members-only),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.yt-badge-shape--type-members-only),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.yt-badge-shape--membership),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([overlay-style*="MEMBERS" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="Members only" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="Members only" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.badge-style-type-premium),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([class*="premium" i].ytd-badge-supported-renderer),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="YouTube Premium" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="YouTube Premium" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="Buy or rent" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="Buy or rent" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="Purchase" i]),
+html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="Purchase" i]),
+.my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-date-hidden],
+.my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-view-hidden],
+.my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-seen-hidden] {
   display: none !important;
 }
 
-ytd-browse[page-subtype="home"] .my-youtube-styler-filter-renderer {
+.my-youtube-styler-feed-page .my-youtube-styler-filter-renderer {
   min-width: 0 !important;
   width: 100% !important;
 }
 
-ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row {
+.my-youtube-styler-feed-page .my-youtube-styler-filter-row {
   align-items: center !important;
   box-sizing: border-box !important;
   display: flex !important;
@@ -133,18 +133,38 @@ ytd-browse[page-subtype="home"] .my-youtube-styler-filter-row {
   max-width: 50%;
 }
 
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #scroll-container,
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #chip-container,
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area #chips {
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #scroll-container,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #chip-container,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area #chips {
   flex: 1 1 auto !important;
   max-width: 100% !important;
   min-width: 0 !important;
 }
 
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #left-arrow,
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #right-arrow,
-ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #filter {
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #left-arrow,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #right-arrow,
+.my-youtube-styler-feed-page .my-youtube-styler-chip-area > #filter {
   flex: 0 0 auto !important;
+}
+
+.my-youtube-styler-subscriptions-filter-anchor {
+  align-items: center;
+  background: var(--yt-spec-base-background, #fff);
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 48px;
+  padding: 8px 24px 6px;
+  position: sticky;
+  top: var(--ytd-masthead-height, 56px);
+  width: 100%;
+  z-index: 1000;
+}
+
+.my-youtube-styler-subscriptions-filter-anchor .my-youtube-styler-filter-bar {
+  margin-left: 0;
+  max-width: min(100%, 920px);
+  padding-right: 0;
 }
 
 .my-youtube-styler-filter-bar {
@@ -222,6 +242,11 @@ ytd-browse[page-subtype="home"] .my-youtube-styler-chip-area > #filter {
 }
 
 @media (max-width: 900px) {
+  .my-youtube-styler-subscriptions-filter-anchor {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
   .my-youtube-styler-filter-bar {
     gap: 4px;
     margin-left: 8px;
