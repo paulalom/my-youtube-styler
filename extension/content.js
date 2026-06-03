@@ -18,6 +18,7 @@
     hidePaidVideos: true,
     hideShorts: true,
     hideYouMightLike: true,
+    hideExploreMoreTopics: true,
     hidePlaylists: false,
     rememberSeenVideos: false
   };
@@ -27,6 +28,7 @@
     hidePaidVideos: "my-youtube-styler-hide-paid",
     hideShorts: "my-youtube-styler-hide-shorts",
     hideYouMightLike: "my-youtube-styler-hide-you-might-like",
+    hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
     hidePlaylists: "my-youtube-styler-hide-playlists"
   };
 
@@ -252,21 +254,25 @@
     return document.querySelector('ytd-browse[page-subtype="home"]');
   }
 
-  function getChipHost(home) {
-    return (
-      home.querySelector("yt-chip-cloud-renderer #chips") ||
-      home.querySelector("ytd-feed-filter-chip-bar-renderer #chips") ||
-      home.querySelector("yt-chip-cloud-renderer") ||
-      home.querySelector("ytd-feed-filter-chip-bar-renderer")
-    );
+  function getFilterRowTarget(home) {
+    const renderer = home.querySelector("ytd-feed-filter-chip-bar-renderer, yt-chip-cloud-renderer");
+    if (!renderer) {
+      return null;
+    }
+
+    return {
+      renderer,
+      rowHost: renderer.querySelector("#container") || renderer.querySelector("#chips-wrapper") || renderer
+    };
   }
 
   function ensureFilterControls(home) {
-    const chipHost = getChipHost(home);
-    if (!chipHost) {
+    const filterRowTarget = getFilterRowTarget(home);
+    if (!filterRowTarget) {
       return;
     }
 
+    const { renderer, rowHost } = filterRowTarget;
     let controls = document.getElementById(FILTER_ID);
 
     if (!controls) {
@@ -281,8 +287,11 @@
       controls.appendChild(createViewSelectGroup("Max views", "max"));
     }
 
-    if (controls.parentElement !== chipHost) {
-      chipHost.appendChild(controls);
+    renderer.classList.add("my-youtube-styler-filter-renderer");
+    rowHost.classList.add("my-youtube-styler-filter-row");
+
+    if (controls.parentElement !== rowHost) {
+      rowHost.appendChild(controls);
     }
 
     updateControlState(controls);

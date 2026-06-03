@@ -7,6 +7,7 @@ const defaultSettings = {
   hidePaidVideos: true,
   hideShorts: true,
   hideYouMightLike: true,
+  hideExploreMoreTopics: true,
   hidePlaylists: false,
   rememberSeenVideos: false
 };
