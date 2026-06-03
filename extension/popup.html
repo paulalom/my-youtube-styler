@@ -47,6 +47,22 @@
         </span>
         <input type="checkbox" data-setting="hideYouMightLike">
       </label>
+
+      <label class="setting">
+        <span class="setting__text">
+          <strong>Remember seen homepage videos</strong>
+          <small>Hide videos you saw on Home for 7 days after the next load or refresh.</small>
+        </span>
+        <input type="checkbox" data-setting="rememberSeenVideos">
+      </label>
+
+      <div class="setting setting--action">
+        <span class="setting__text">
+          <strong>Seen-video history</strong>
+          <small id="clear-history-status">History expires automatically after 7 days.</small>
+        </span>
+        <button class="action-button" id="clear-history" type="button">Clear</button>
+      </div>
     </main>
 
     <script src="popup.js"></script>

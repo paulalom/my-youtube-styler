@@ -70,7 +70,8 @@ html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-r
 html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([aria-label*="Purchase" i]),
 html.my-youtube-styler-hide-paid ytd-browse[page-subtype="home"] ytd-rich-item-renderer:has([title*="Purchase" i]),
 ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-date-hidden],
-ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-view-hidden] {
+ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-view-hidden],
+ytd-browse[page-subtype="home"] ytd-rich-item-renderer[data-my-youtube-styler-seen-hidden] {
   display: none !important;
 }
 

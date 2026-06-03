@@ -12,6 +12,7 @@ A local Firefox WebExtension for small YouTube homepage tweaks.
   - Hide paid/member videos
   - Hide Shorts
   - Hide You might like sections
+  - Remember seen homepage videos
 - Adds a homepage date filter beside the category chips:
   - All
   - 7 days
@@ -47,5 +48,7 @@ Temporary add-ons are unloaded when Firefox restarts. For permanent use, package
 - Videos with unrecognized or missing age/view text are left visible.
 - Selected filters are stored in the YouTube tab session only.
 - Toolbar-popup settings are stored in Firefox extension storage.
+- Seen-video history stores homepage video IDs with last-seen timestamps, hides them on the next Home load or refresh, and prunes entries older than 7 days.
+- The popup includes a clear-history button for seen-video history.
 - No network requests are made by the extension.
 - Do not initialize Git inside your Firefox profile folder. Keep browser profile data out of this repo.

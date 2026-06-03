@@ -3,17 +3,22 @@
   const FILTER_ID = "my-youtube-styler-filter-bar";
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
+  const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
   const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
+  const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
   const DAY = 24 * 60 * 60 * 1000;
+  const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
+  const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
 
   const defaultSettings = {
     compactLayout: true,
     hidePaidVideos: true,
     hideShorts: true,
-    hideYouMightLike: true
+    hideYouMightLike: true,
+    rememberSeenVideos: false
   };
 
   const settingClasses = {
@@ -46,6 +51,15 @@
   let selectedDateFilter = readStoredChoice(DATE_STORAGE_KEY, dateFilters, "all");
   let selectedMinViewsFilter = readStoredChoice(MIN_VIEWS_STORAGE_KEY, viewFilters, "all");
   let selectedMaxViewsFilter = readStoredChoice(MAX_VIEWS_STORAGE_KEY, viewFilters, "all");
+  let seenHistory = {};
+  let hiddenSeenVideoIds = new Set();
+  let currentPageSeenVideoIds = new Set();
+  let seenHistoryFlushTimer = 0;
+  let seenHistoryFlushInFlight = false;
+  let seenHistoryWriteGeneration = 0;
+  let seenObserver = null;
+  const pendingSeenVideoIds = new Set();
+  let observedSeenCards = new WeakMap();
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -72,17 +86,31 @@
     };
   }
 
-  function getStoredSettings() {
+  function getLocal(keys) {
     if (!extensionApi?.storage?.local) {
       return Promise.resolve({});
     }
 
     if (globalThis.browser?.storage?.local) {
-      return browser.storage.local.get(SETTINGS_STORAGE_KEY);
+      return browser.storage.local.get(keys);
     }
 
     return new Promise((resolve) => {
-      chrome.storage.local.get(SETTINGS_STORAGE_KEY, resolve);
+      chrome.storage.local.get(keys, resolve);
+    });
+  }
+
+  function setLocal(items) {
+    if (!extensionApi?.storage?.local) {
+      return Promise.resolve();
+    }
+
+    if (globalThis.browser?.storage?.local) {
+      return browser.storage.local.set(items);
+    }
+
+    return new Promise((resolve) => {
+      chrome.storage.local.set(items, resolve);
     });
   }
 
@@ -92,21 +120,122 @@
     }
 
     extensionApi.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName !== "local" || !changes[SETTINGS_STORAGE_KEY]) {
+      if (areaName !== "local") {
         return;
       }
 
-      settings = normalizeSettings(changes[SETTINGS_STORAGE_KEY].newValue);
-      applySettingsClasses();
-      scheduleApply();
+      if (changes[SETTINGS_STORAGE_KEY]) {
+        settings = normalizeSettings(changes[SETTINGS_STORAGE_KEY].newValue);
+
+        if (!settings.rememberSeenVideos) {
+          discardPendingSeenHistory();
+          disconnectSeenObserver();
+        }
+
+        applySettingsClasses();
+        scheduleApply();
+      }
+
+      if (changes[SEEN_HISTORY_STORAGE_KEY]) {
+        const changedHistory = normalizeSeenHistory(changes[SEEN_HISTORY_STORAGE_KEY].newValue);
+
+        if (Object.keys(changedHistory).length === 0) {
+          discardPendingSeenHistory();
+          currentPageSeenVideoIds = getCurrentHomeVideoIds();
+        }
+
+        seenHistory = pruneSeenHistory(changedHistory);
+        updateHiddenSeenVideoIds();
+        disconnectSeenObserver();
+        scheduleApply();
+      }
     });
   }
 
   async function loadSettings() {
-    const result = await getStoredSettings();
+    const result = await getLocal(SETTINGS_STORAGE_KEY);
     settings = normalizeSettings(result[SETTINGS_STORAGE_KEY]);
     applySettingsClasses();
     scheduleApply();
+  }
+
+  async function loadSeenHistory() {
+    const result = await getLocal(SEEN_HISTORY_STORAGE_KEY);
+    const rawHistory = normalizeSeenHistory(result[SEEN_HISTORY_STORAGE_KEY]);
+    const prunedHistory = pruneSeenHistory(rawHistory);
+
+    seenHistory = prunedHistory;
+    updateHiddenSeenVideoIds();
+
+    if (Object.keys(rawHistory).length !== Object.keys(prunedHistory).length) {
+      await setLocal({ [SEEN_HISTORY_STORAGE_KEY]: prunedHistory });
+    }
+
+    scheduleApply();
+  }
+
+  function normalizeSeenHistory(rawHistory) {
+    if (!rawHistory || typeof rawHistory !== "object") {
+      return {};
+    }
+
+    const normalizedHistory = {};
+
+    for (const [videoId, timestamp] of Object.entries(rawHistory)) {
+      if (typeof videoId === "string" && Number.isFinite(timestamp)) {
+        normalizedHistory[videoId] = timestamp;
+      }
+    }
+
+    return normalizedHistory;
+  }
+
+  function pruneSeenHistory(history) {
+    const newestAllowedTimestamp = Date.now() - SEEN_HISTORY_MAX_AGE_MS;
+    const prunedHistory = {};
+
+    for (const [videoId, timestamp] of Object.entries(history)) {
+      if (timestamp >= newestAllowedTimestamp) {
+        prunedHistory[videoId] = timestamp;
+      }
+    }
+
+    return prunedHistory;
+  }
+
+  function updateHiddenSeenVideoIds() {
+    hiddenSeenVideoIds = new Set(
+      Object.keys(seenHistory).filter((videoId) => !currentPageSeenVideoIds.has(videoId))
+    );
+  }
+
+  function discardPendingSeenHistory() {
+    seenHistoryWriteGeneration += 1;
+    pendingSeenVideoIds.clear();
+
+    if (seenHistoryFlushTimer) {
+      window.clearTimeout(seenHistoryFlushTimer);
+      seenHistoryFlushTimer = 0;
+    }
+  }
+
+  function getCurrentHomeVideoIds() {
+    const home = getHome();
+    const videoIds = new Set();
+
+    if (!home) {
+      return videoIds;
+    }
+
+    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+      const videoId = getCardVideoId(card);
+
+      if (videoId) {
+        videoIds.add(videoId);
+      }
+    }
+
+    return videoIds;
   }
 
   function applySettingsClasses() {
@@ -396,6 +525,116 @@
     return null;
   }
 
+  function getCardVideoId(card) {
+    const link = card.querySelector('a[href*="/watch"][href*="v="]');
+    if (!link) {
+      return null;
+    }
+
+    try {
+      return new URL(link.getAttribute("href"), location.origin).searchParams.get("v");
+    } catch {
+      return null;
+    }
+  }
+
+  function ensureSeenObserver() {
+    if (seenObserver || typeof IntersectionObserver !== "function") {
+      return;
+    }
+
+    seenObserver = new IntersectionObserver(handleSeenIntersections, {
+      root: null,
+      threshold: 0.5
+    });
+  }
+
+  function handleSeenIntersections(entries) {
+    if (!settings.rememberSeenVideos) {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (!entry.isIntersecting || entry.intersectionRatio < 0.5) {
+        continue;
+      }
+
+      const card = entry.target;
+      const videoId = getCardVideoId(card);
+
+      if (!videoId || hiddenSeenVideoIds.has(videoId) || card.hasAttribute(SEEN_HIDDEN_ATTR)) {
+        continue;
+      }
+
+      recordSeenVideo(videoId);
+      seenObserver?.unobserve(card);
+      observedSeenCards.delete(card);
+    }
+  }
+
+  function recordSeenVideo(videoId) {
+    if (currentPageSeenVideoIds.has(videoId)) {
+      return;
+    }
+
+    currentPageSeenVideoIds.add(videoId);
+    seenHistory[videoId] = Date.now();
+    pendingSeenVideoIds.add(videoId);
+    scheduleSeenHistoryFlush();
+  }
+
+  function scheduleSeenHistoryFlush() {
+    if (seenHistoryFlushTimer) {
+      return;
+    }
+
+    seenHistoryFlushTimer = window.setTimeout(() => {
+      seenHistoryFlushTimer = 0;
+      flushSeenHistory();
+    }, SEEN_HISTORY_WRITE_DELAY_MS);
+  }
+
+  async function flushSeenHistory() {
+    if (seenHistoryFlushInFlight || pendingSeenVideoIds.size === 0) {
+      return;
+    }
+
+    seenHistoryFlushInFlight = true;
+    const writeGeneration = seenHistoryWriteGeneration;
+
+    const pendingEntries = [...pendingSeenVideoIds].map((videoId) => [
+      videoId,
+      seenHistory[videoId] || Date.now()
+    ]);
+
+    pendingSeenVideoIds.clear();
+
+    try {
+      const result = await getLocal(SEEN_HISTORY_STORAGE_KEY);
+
+      if (writeGeneration !== seenHistoryWriteGeneration) {
+        return;
+      }
+
+      const mergedHistory = pruneSeenHistory(normalizeSeenHistory(result[SEEN_HISTORY_STORAGE_KEY]));
+
+      for (const [videoId, timestamp] of pendingEntries) {
+        mergedHistory[videoId] = timestamp;
+      }
+
+      seenHistory = mergedHistory;
+      updateHiddenSeenVideoIds();
+
+      await setLocal({ [SEEN_HISTORY_STORAGE_KEY]: mergedHistory });
+    } finally {
+      seenHistoryFlushInFlight = false;
+
+      if (pendingSeenVideoIds.size > 0) {
+        scheduleSeenHistoryFlush();
+      }
+    }
+  }
+
   function applyDateFilter(home) {
     const activeDateFilter = getActiveDateFilter();
 
@@ -439,6 +678,69 @@
     }
   }
 
+  function applySeenHistoryFilter(home) {
+    if (!settings.rememberSeenVideos) {
+      disconnectSeenObserver();
+
+      for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+        card.removeAttribute(SEEN_HIDDEN_ATTR);
+      }
+
+      return;
+    }
+
+    ensureSeenObserver();
+
+    for (const card of home.querySelectorAll("ytd-rich-item-renderer")) {
+      const videoId = getCardVideoId(card);
+
+      if (!videoId) {
+        card.removeAttribute(SEEN_HIDDEN_ATTR);
+        continue;
+      }
+
+      if (hiddenSeenVideoIds.has(videoId)) {
+        card.setAttribute(SEEN_HIDDEN_ATTR, "");
+        continue;
+      }
+
+      card.removeAttribute(SEEN_HIDDEN_ATTR);
+
+      if (!currentPageSeenVideoIds.has(videoId)) {
+        observeSeenCard(card, videoId);
+      }
+    }
+  }
+
+  function observeSeenCard(card, videoId) {
+    if (!seenObserver) {
+      return;
+    }
+
+    const observedVideoId = observedSeenCards.get(card);
+
+    if (observedVideoId === videoId) {
+      return;
+    }
+
+    if (observedVideoId) {
+      seenObserver.unobserve(card);
+    }
+
+    observedSeenCards.set(card, videoId);
+    seenObserver.observe(card);
+  }
+
+  function disconnectSeenObserver() {
+    if (!seenObserver) {
+      return;
+    }
+
+    seenObserver.disconnect();
+    seenObserver = null;
+    observedSeenCards = new WeakMap();
+  }
+
   function applyHomepageTweaks() {
     const home = getHome();
 
@@ -451,6 +753,7 @@
     ensureFilterControls(home);
     applyDateFilter(home);
     applyViewFilter(home);
+    applySeenHistoryFilter(home);
   }
 
   function scheduleApply() {
@@ -465,16 +768,38 @@
     });
   }
 
+  function handleNavigateFinish() {
+    if (!getHome()) {
+      flushSeenHistory();
+      currentPageSeenVideoIds.clear();
+      updateHiddenSeenVideoIds();
+      disconnectSeenObserver();
+    }
+
+    scheduleApply();
+  }
+
+  function handlePageHide() {
+    if (seenHistoryFlushTimer) {
+      window.clearTimeout(seenHistoryFlushTimer);
+      seenHistoryFlushTimer = 0;
+    }
+
+    flushSeenHistory();
+  }
+
   applySettingsClasses();
   watchSettings();
   loadSettings();
+  loadSeenHistory();
 
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
-  window.addEventListener("yt-navigate-finish", scheduleApply);
+  window.addEventListener("yt-navigate-finish", handleNavigateFinish);
   window.addEventListener("popstate", scheduleApply);
   window.addEventListener("pageshow", scheduleApply);
+  window.addEventListener("pagehide", handlePageHide);
 
   scheduleApply();
 })();

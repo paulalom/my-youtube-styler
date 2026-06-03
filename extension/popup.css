@@ -91,3 +91,28 @@ input[type="checkbox"] {
   height: 18px;
   width: 18px;
 }
+
+.setting--action {
+  cursor: default;
+}
+
+.action-button {
+  background: #d93025;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font: 700 12px/30px Arial, Helvetica, sans-serif;
+  height: 30px;
+  min-width: 62px;
+  padding: 0 12px;
+}
+
+.action-button:hover {
+  background: #b3261e;
+}
+
+.action-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
