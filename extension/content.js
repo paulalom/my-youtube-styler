@@ -278,7 +278,7 @@
 
   function getFeedPage() {
     const feedKey = getSupportedFeedKey();
-    const feedPage = feedKey ? document.querySelector("ytd-browse") : null;
+    const feedPage = feedKey ? findFeedPage(feedKey) : null;
 
     for (const previousFeedPage of document.querySelectorAll(".my-youtube-styler-feed-page")) {
       if (previousFeedPage !== feedPage) {
@@ -292,7 +292,44 @@
       feedPage.dataset.myYoutubeStylerFeed = feedKey;
     }
 
+    if (feedKey !== "subscriptions" || !feedPage) {
+      removeSubscriptionsFilterAnchor();
+    }
+
     return feedPage;
+  }
+
+  function findFeedPage(feedKey) {
+    const primarySelector =
+      feedKey === "home"
+        ? 'ytd-browse[page-subtype="home"]'
+        : 'ytd-browse[page-subtype="subscriptions"], ytd-browse[page-subtype="subscriptions-feed"]';
+    const primaryCandidates = [...document.querySelectorAll(primarySelector)];
+    const primaryPage = primaryCandidates.find(isVisibleElement);
+
+    if (primaryPage) {
+      return primaryPage;
+    }
+
+    return [...document.querySelectorAll("ytd-browse")].find((browse) => {
+      const pageSubtype = browse.getAttribute("page-subtype") || "";
+
+      if (pageSubtype) {
+        const matchesFeed = feedKey === "home" ? pageSubtype === "home" : pageSubtype.includes("subscriptions");
+        return matchesFeed && isVisibleElement(browse);
+      }
+
+      return isVisibleElement(browse);
+    }) || null;
+  }
+
+  function isVisibleElement(element) {
+    if (!element?.isConnected || element.getClientRects().length === 0) {
+      return false;
+    }
+
+    const style = window.getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
   }
 
   function getFilterRowTarget(feedPage) {
@@ -372,18 +409,28 @@
       anchor.className = "my-youtube-styler-subscriptions-filter-anchor";
     }
 
+    const richGrid = feedPage.querySelector("ytd-rich-grid-renderer");
+    const sectionList = feedPage.querySelector("ytd-section-list-renderer");
     const mount =
-      feedPage.querySelector("ytd-rich-grid-renderer") ||
-      feedPage.querySelector("ytd-section-list-renderer") ||
-      feedPage.querySelector("#contents") ||
+      feedPage.querySelector("ytd-two-column-browse-results-renderer #primary") ||
+      richGrid?.parentElement ||
+      sectionList?.parentElement ||
       feedPage;
 
     if (anchor.parentElement !== mount) {
-      const header = mount.querySelector(":scope > #header");
-      mount.insertBefore(anchor, header?.nextSibling || mount.firstChild);
+      const referenceNode =
+        richGrid?.parentElement === mount ? richGrid :
+        sectionList?.parentElement === mount ? sectionList :
+        mount.querySelector(":scope > ytd-rich-grid-renderer, :scope > ytd-section-list-renderer, :scope > #contents");
+
+      mount.insertBefore(anchor, referenceNode || mount.firstChild);
     }
 
     return anchor;
+  }
+
+  function removeSubscriptionsFilterAnchor() {
+    document.getElementById(SUBSCRIPTIONS_FILTER_ANCHOR_ID)?.remove();
   }
 
   function syncActiveFeed() {

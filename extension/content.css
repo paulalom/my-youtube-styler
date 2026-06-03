@@ -169,9 +169,9 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 
 .my-youtube-styler-subscriptions-filter-anchor {
   align-items: center;
-  background: var(--yt-spec-base-background, #fff);
+  background: var(--yt-spec-base-background, transparent);
   box-sizing: border-box;
-  display: flex;
+  display: none;
   justify-content: flex-end;
   min-height: 48px;
   padding: 8px 24px 6px;
@@ -179,6 +179,10 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   top: var(--ytd-masthead-height, 56px);
   width: 100%;
   z-index: 1000;
+}
+
+.my-youtube-styler-feed-page[data-my-youtube-styler-feed="subscriptions"] .my-youtube-styler-subscriptions-filter-anchor {
+  display: flex;
 }
 
 .my-youtube-styler-subscriptions-filter-anchor .my-youtube-styler-filter-bar {
