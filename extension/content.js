@@ -1,6 +1,8 @@
 (() => {
   const extensionApi = globalThis.browser || globalThis.chrome;
   const FILTER_ID = "my-youtube-styler-filter-bar";
+  const CHIP_AREA_ID = "my-youtube-styler-chip-area";
+  const FILTER_AREA_ID = "my-youtube-styler-filter-area";
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
@@ -294,11 +296,50 @@
     renderer.classList.add("my-youtube-styler-filter-renderer");
     rowHost.classList.add("my-youtube-styler-filter-row");
 
-    if (controls.parentElement !== rowHost) {
-      rowHost.appendChild(controls);
+    const layout = ensureFilterRowLayout(rowHost);
+    if (!layout) {
+      return;
+    }
+
+    if (controls.parentElement !== layout.filterArea) {
+      layout.filterArea.appendChild(controls);
     }
 
     updateControlState(controls);
+  }
+
+  function ensureFilterRowLayout(rowHost) {
+    let chipArea = rowHost.querySelector(`:scope > #${CHIP_AREA_ID}`);
+    let filterArea = rowHost.querySelector(`:scope > #${FILTER_AREA_ID}`);
+    const chipNodes = ["left-arrow", "filter", "scroll-container", "right-arrow"]
+      .map((id) => rowHost.querySelector(`:scope > #${id}`) || chipArea?.querySelector(`:scope > #${id}`))
+      .filter(Boolean);
+
+    if (chipNodes.length === 0) {
+      return null;
+    }
+
+    if (!chipArea) {
+      chipArea = document.createElement("div");
+      chipArea.id = CHIP_AREA_ID;
+      chipArea.className = "my-youtube-styler-chip-area";
+      rowHost.insertBefore(chipArea, chipNodes[0]);
+    }
+
+    if (!filterArea) {
+      filterArea = document.createElement("div");
+      filterArea.id = FILTER_AREA_ID;
+      filterArea.className = "my-youtube-styler-filter-area";
+      rowHost.appendChild(filterArea);
+    }
+
+    for (const chipNode of chipNodes) {
+      if (chipNode.parentElement !== chipArea) {
+        chipArea.appendChild(chipNode);
+      }
+    }
+
+    return { chipArea, filterArea };
   }
 
   function createDateGroup() {
