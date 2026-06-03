@@ -13,6 +13,15 @@ A local Firefox WebExtension for small YouTube homepage tweaks.
   - 1 month
   - 1 year
   - 5 years
+- Adds min-view and max-view filters:
+  - All
+  - 1K
+  - 10K
+  - 100K
+  - 1M
+  - 10M
+  - 100M
+  - 1B
 
 The extension is scoped to `https://www.youtube.com/*`. Its JavaScript only operates on the YouTube homepage container, `ytd-browse[page-subtype="home"]`, so it keeps working when YouTube navigates between pages without a full reload.
 
@@ -28,8 +37,8 @@ Temporary add-ons are unloaded when Firefox restarts. For permanent use, package
 ## Notes
 
 - The date filter reads the visible relative age text on homepage video cards, such as `3 hours ago` or `2 weeks ago`.
-- Videos with unrecognized or missing age text are left visible.
-- The selected date filter is stored in the YouTube tab session only.
+- The view filters read visible homepage metadata, such as `71 views`, `1.5K views`, or `1.5 million views`.
+- Videos with unrecognized or missing age/view text are left visible.
+- Selected filters are stored in the YouTube tab session only.
 - No network requests are made by the extension.
 - Do not initialize Git inside your Firefox profile folder. Keep browser profile data out of this repo.
-
