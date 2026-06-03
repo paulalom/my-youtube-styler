@@ -35,6 +35,14 @@ On Home, the filters share the category-chip row, with the chips constrained to 
 
 The extension is scoped to `https://www.youtube.com/*`. Its JavaScript only operates on the YouTube Home path (`/`) and Subscriptions path (`/feed/subscriptions`), so it keeps working when YouTube navigates between pages without a full reload.
 
+## Examples
+
+Firefox v0.6.4 examples:
+
+![YouTube homepage with compact styling](examples/firefox-v0.6.4/homepage.PNG)
+
+![My YouTube Styler options popup](examples/firefox-v0.6.4/styler-options.PNG)
+
 ## Load In Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`.
