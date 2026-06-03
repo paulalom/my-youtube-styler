@@ -55,12 +55,6 @@ Temporary add-ons are unloaded when Firefox restarts. During development, reload
 
 ## Notes
 
-- The old Firefox profile `userContent.css` tweaks were migrated into this extension.
 - The date filter reads the visible relative age text on feed video cards, such as `3 hours ago` or `2 weeks ago`.
 - The view filters read visible feed metadata, such as `71 views`, `1.5K views`, or `1.5 million views`.
 - Videos with unrecognized or missing age/view text are left visible.
-- The Explore more topics toggle defaults to on.
-- The playlist toggle defaults to off.
-- The popup includes a clear-history button for seen-video history.
-- The popup includes a reset button for inline date/view filters.
-- Do not initialize Git inside your Firefox profile folder. Keep browser profile data out of this repo.
