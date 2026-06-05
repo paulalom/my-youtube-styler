@@ -107,6 +107,10 @@ html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd
   display: none !important;
 }
 
+html.my-youtube-styler-hide-featured .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-brand-video-shelf-renderer) {
+  display: none !important;
+}
+
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay,
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay *,
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paid_content" i]:not([href*="/watch" i]),

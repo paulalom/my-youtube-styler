@@ -31,9 +31,10 @@
     hideShorts: true,
     hideYouMightLike: true,
     hideExploreMoreTopics: true,
+    hideFeaturedShelves: true,
     colorVideoMetadata: true,
     openVideoOnThumbnailClick: true,
-    hidePlaylists: false,
+    hidePlaylists: true,
     rememberSeenVideos: false
   };
 
@@ -43,6 +44,7 @@
     hideShorts: "my-youtube-styler-hide-shorts",
     hideYouMightLike: "my-youtube-styler-hide-you-might-like",
     hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
+    hideFeaturedShelves: "my-youtube-styler-hide-featured",
     openVideoOnThumbnailClick: "my-youtube-styler-open-video-on-thumbnail-click",
     hidePlaylists: "my-youtube-styler-hide-playlists"
   };

@@ -13,7 +13,7 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Adds minimum and maximum view-count filters from 1K through 1B views.
 - Remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Routes thumbnail-overlay clicks, including paid-promotion overlays, to the video page.
-- Hides Shorts, topic shelves, playlists, "You might like" sections, and common paid/member-only badge variants.
+- Hides Shorts, topic shelves, YouTube featured shelves, playlists, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
   - Compact thumbnails, icons, and text
   - Color views and age
@@ -22,6 +22,7 @@ The extension runs only in your browser, stores settings locally, and does not m
   - Hide Shorts
   - Hide You might like sections
   - Hide Explore more topics
+  - Hide YouTube featured shelves
   - Hide playlists
   - Remember seen feed videos
 
