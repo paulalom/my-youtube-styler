@@ -107,6 +107,17 @@ html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd
   display: none !important;
 }
 
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay,
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay *,
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paid_content" i]:not([href*="/watch" i]),
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paidcontent" i]:not([href*="/watch" i]),
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[aria-label*="Includes paid promotion" i],
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[aria-label*="Includes paid promotion" i] *,
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[title*="Includes paid promotion" i],
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[title*="Includes paid promotion" i] * {
+  pointer-events: none !important;
+}
+
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-playlist-renderer),
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-grid-playlist-renderer),
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-compact-playlist-renderer),

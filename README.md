@@ -12,11 +12,13 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Adds date filters for videos newer than 7 days, 1 month, 1 year, or 5 years.
 - Adds minimum and maximum view-count filters from 1K through 1B views.
 - Remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
+- Routes thumbnail-overlay clicks, including paid-promotion overlays, to the video page.
 - Hides Shorts, topic shelves, playlists, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
   - Compact thumbnails, icons, and text
   - Color views and age
   - Hide paid/member videos
+  - Open video from thumbnail clicks
   - Hide Shorts
   - Hide You might like sections
   - Hide Explore more topics

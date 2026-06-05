@@ -32,6 +32,7 @@
     hideYouMightLike: true,
     hideExploreMoreTopics: true,
     colorVideoMetadata: true,
+    openVideoOnThumbnailClick: true,
     hidePlaylists: false,
     rememberSeenVideos: false
   };
@@ -42,6 +43,7 @@
     hideShorts: "my-youtube-styler-hide-shorts",
     hideYouMightLike: "my-youtube-styler-hide-you-might-like",
     hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
+    openVideoOnThumbnailClick: "my-youtube-styler-open-video-on-thumbnail-click",
     hidePlaylists: "my-youtube-styler-hide-playlists"
   };
 
@@ -75,6 +77,7 @@
   let seenHistoryFlushInFlight = false;
   let seenHistoryWriteGeneration = 0;
   let seenObserver = null;
+  let reroutingThumbnailClick = false;
   const pendingSeenVideoIds = new Set();
   let observedSeenCards = new WeakMap();
   let activeFeedKey = null;
@@ -918,6 +921,101 @@
     }
   }
 
+  function getCardThumbnailTarget(card) {
+    return card.querySelector(
+      [
+        'a#thumbnail[href*="/watch"][href*="v="]',
+        'a.ytLockupViewModelContentImage[href*="/watch"][href*="v="]',
+        'a[href*="/watch"][href*="v="][aria-hidden="true"]',
+        "ytd-thumbnail",
+        "yt-thumbnail-view-model"
+      ].join(", ")
+    );
+  }
+
+  function isPointInsideElement(event, element) {
+    if (!element) {
+      return false;
+    }
+
+    for (const rect of element.getClientRects()) {
+      if (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function getAbsoluteHref(link) {
+    try {
+      return new URL(link.getAttribute("href"), location.origin).href;
+    } catch {
+      return link.href || "";
+    }
+  }
+
+  function followVideoLink(link, event) {
+    const href = getAbsoluteHref(link);
+
+    if (!href) {
+      return;
+    }
+
+    if (event.type === "auxclick" || event.button === 1 || event.ctrlKey || event.metaKey || event.shiftKey) {
+      window.open(href, "_blank", "noopener");
+      return;
+    }
+
+    try {
+      reroutingThumbnailClick = true;
+      link.click();
+    } finally {
+      reroutingThumbnailClick = false;
+    }
+  }
+
+  function handleThumbnailVideoClick(event) {
+    if (
+      !settings.openVideoOnThumbnailClick ||
+      reroutingThumbnailClick ||
+      event.defaultPrevented ||
+      (event.type !== "click" && event.type !== "auxclick")
+    ) {
+      return;
+    }
+
+    if (event.type === "auxclick" && event.button !== 1) {
+      return;
+    }
+
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const card = target?.closest?.("ytd-rich-item-renderer");
+
+    if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
+      return;
+    }
+
+    const link = getCardVideoLink(card);
+    const thumbnailTarget = getCardThumbnailTarget(card) || link;
+
+    if (!link || !isPointInsideElement(event, thumbnailTarget)) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    followVideoLink(link, event);
+  }
+
   function ensureSeenObserver() {
     if (seenObserver || typeof IntersectionObserver !== "function") {
       return;
@@ -1174,6 +1272,8 @@
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
   window.addEventListener("yt-navigate-finish", handleNavigateFinish);
+  window.addEventListener("click", handleThumbnailVideoClick, true);
+  window.addEventListener("auxclick", handleThumbnailVideoClick, true);
   window.addEventListener("popstate", scheduleApply);
   window.addEventListener("pageshow", scheduleApply);
   window.addEventListener("pagehide", handlePageHide);

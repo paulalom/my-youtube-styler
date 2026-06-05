@@ -10,6 +10,7 @@ const defaultSettings = {
   hideYouMightLike: true,
   hideExploreMoreTopics: true,
   colorVideoMetadata: true,
+  openVideoOnThumbnailClick: true,
   hidePlaylists: false,
   rememberSeenVideos: false
 };
