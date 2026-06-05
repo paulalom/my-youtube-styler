@@ -353,6 +353,11 @@
     const filterRowTarget = shouldUseSubscriptionsAnchor ? null : getFilterRowTarget(feedPage);
     let controls = document.getElementById(FILTER_ID);
 
+    if (controls && !controls.querySelector("select[data-date-filter]")) {
+      controls.remove();
+      controls = null;
+    }
+
     if (!filterRowTarget && !shouldUseSubscriptionsAnchor) {
       if (controls) {
         updateControlState(controls);
@@ -450,6 +455,7 @@
   function ensureFilterRowLayout(rowHost) {
     let chipArea = rowHost.querySelector(`:scope > #${CHIP_AREA_ID}`);
     let filterArea = rowHost.querySelector(`:scope > #${FILTER_AREA_ID}`);
+    const selectedChipContent = rowHost.querySelector(":scope > #selected-chip-content");
     let layoutChanged = false;
     const chipNodes = ["left-arrow", "chips-content", "filter", "scroll-container", "chip-container", "right-arrow"]
       .map((id) => rowHost.querySelector(`:scope > #${id}`) || chipArea?.querySelector(`:scope > #${id}`))
@@ -471,7 +477,17 @@
       filterArea = document.createElement("div");
       filterArea.id = FILTER_AREA_ID;
       filterArea.className = "my-youtube-styler-filter-area";
-      rowHost.appendChild(filterArea);
+      layoutChanged = true;
+    }
+
+    if (filterArea.parentElement !== rowHost) {
+      rowHost.insertBefore(filterArea, selectedChipContent || chipArea.nextSibling);
+      layoutChanged = true;
+    } else if (selectedChipContent && filterArea.nextSibling !== selectedChipContent) {
+      rowHost.insertBefore(filterArea, selectedChipContent);
+      layoutChanged = true;
+    } else if (!selectedChipContent && chipArea.nextSibling !== filterArea) {
+      rowHost.insertBefore(filterArea, chipArea.nextSibling);
       layoutChanged = true;
     }
 
@@ -502,27 +518,32 @@
   }
 
   function createDateGroup() {
-    const group = document.createElement("div");
-    group.className = "my-youtube-styler-filter-bar__group";
+    const group = document.createElement("label");
+    group.className = "my-youtube-styler-filter-bar__select-group";
 
     const label = document.createElement("span");
     label.className = "my-youtube-styler-filter-bar__label";
     label.textContent = "Newer";
     group.appendChild(label);
 
+    const select = document.createElement("select");
+    select.className = "my-youtube-styler-filter-bar__select";
+    select.dataset.dateFilter = "newer";
+
     for (const filter of dateFilters) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "my-youtube-styler-filter-bar__button";
-      button.dataset.dateFilterKey = filter.key;
-      button.textContent = filter.label;
-      button.addEventListener("click", () => {
-        selectedDateFilter = filter.key;
-        storeChoice(DATE_STORAGE_KEY, filter.key);
-        applyFeedTweaks();
-      });
-      group.appendChild(button);
+      const option = document.createElement("option");
+      option.value = filter.key;
+      option.textContent = filter.label;
+      select.appendChild(option);
     }
+
+    select.addEventListener("change", () => {
+      selectedDateFilter = select.value;
+      storeChoice(DATE_STORAGE_KEY, select.value);
+      applyFeedTweaks();
+    });
+
+    group.appendChild(select);
 
     return group;
   }
@@ -565,12 +586,13 @@
   }
 
   function updateControlState(controls) {
-    for (const button of controls.querySelectorAll("button[data-date-filter-key]")) {
-      button.setAttribute("aria-pressed", String(button.dataset.dateFilterKey === selectedDateFilter));
-    }
-
+    const dateSelect = controls.querySelector("select[data-date-filter]");
     const minSelect = controls.querySelector('select[data-view-filter-type="min"]');
     const maxSelect = controls.querySelector('select[data-view-filter-type="max"]');
+
+    if (dateSelect) {
+      dateSelect.value = selectedDateFilter;
+    }
 
     if (minSelect) {
       minSelect.value = selectedMinViewsFilter;

@@ -30,6 +30,12 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
   line-height: calc(2.2rem - 2pt) !important;
 }
 
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer h3,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset {
+  display: block !important;
+  min-height: calc(4.4rem - 4pt) !important;
+}
+
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer ytd-channel-name,
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line,
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line span,
@@ -108,9 +114,12 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 .my-youtube-styler-feed-page .my-youtube-styler-filter-row {
   align-items: center !important;
   box-sizing: border-box !important;
+  column-gap: 12px !important;
   display: flex !important;
-  gap: 12px !important;
+  flex-flow: row wrap !important;
+  justify-content: flex-start !important;
   min-width: 0 !important;
+  row-gap: 0 !important;
   width: 100% !important;
 }
 
@@ -125,16 +134,30 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 .my-youtube-styler-chip-area {
   flex: 0 1 calc(50% - 6px);
   max-width: calc(50% - 6px);
+  order: 1;
   overflow: hidden;
   position: relative;
   width: calc(50% - 6px);
 }
 
 .my-youtube-styler-filter-area {
-  flex: 0 1 calc(50% - 6px);
-  justify-content: flex-end;
+  flex: 0 1 auto;
+  justify-content: flex-start;
   max-width: calc(50% - 6px);
-  width: calc(50% - 6px);
+  order: 2;
+  width: auto;
+}
+
+.my-youtube-styler-feed-page .my-youtube-styler-filter-row > #selected-chip-content {
+  box-sizing: border-box !important;
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  order: 3 !important;
+}
+
+.my-youtube-styler-feed-page .my-youtube-styler-filter-row > #selected-chip-content:empty {
+  display: none !important;
 }
 
 .my-youtube-styler-feed-page .my-youtube-styler-chip-area > #chips-content,
@@ -196,7 +219,7 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   display: inline-flex;
   flex: 0 1 auto;
   gap: 10px;
-  margin-left: auto;
+  margin-left: 0;
   max-width: 100%;
   overflow-x: auto;
   padding: 0 12px;
@@ -255,6 +278,10 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   padding: 0 28px 0 10px;
 }
 
+.my-youtube-styler-filter-bar__select[data-date-filter] {
+  width: 92px;
+}
+
 .my-youtube-styler-filter-bar__button:hover,
 .my-youtube-styler-filter-bar__select:hover {
   background: var(--yt-spec-mono-tonal-hover, rgba(0, 0, 0, 0.1));
@@ -273,7 +300,7 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 
   .my-youtube-styler-filter-bar {
     gap: 4px;
-    margin-left: 8px;
+    margin-left: 0;
   }
 
   .my-youtube-styler-filter-bar__label {
