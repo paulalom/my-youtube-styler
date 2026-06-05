@@ -13,7 +13,15 @@
   const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
   const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
   const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
+  const VIEW_TONE_ATTR = "data-my-youtube-styler-view-tone";
+  const AGE_TONE_ATTR = "data-my-youtube-styler-age-tone";
   const DAY = 24 * 60 * 60 * 1000;
+  const VIEW_TONE_MIN = 1_000;
+  const VIEW_TONE_MAX = 1_000_000;
+  const AGE_TONE_MIN_MS = DAY;
+  const AGE_TONE_MAX_MS = 31 * DAY;
+  const TONE_HUE_RED = 4;
+  const TONE_HUE_GREEN = 132;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
 
@@ -23,6 +31,7 @@
     hideShorts: true,
     hideYouMightLike: true,
     hideExploreMoreTopics: true,
+    colorVideoMetadata: true,
     hidePlaylists: false,
     rememberSeenVideos: false
   };
@@ -734,6 +743,20 @@
     ];
   }
 
+  function getCardStylableMetadataCandidates(card) {
+    return [
+      ...card.querySelectorAll(
+        [
+          "#metadata-line span",
+          "ytd-video-meta-block span",
+          ".ytContentMetadataViewModelMetadataText",
+          ".ytLockupMetadataViewModelMetadata span",
+          ".yt-content-metadata-view-model-wiz__metadata-text"
+        ].join(", ")
+      )
+    ];
+  }
+
   function getCardAgeMs(card) {
     for (const element of getCardMetadataCandidates(card)) {
       const ariaAge = element.getAttribute("aria-label");
@@ -772,8 +795,118 @@
     return null;
   }
 
+  function getToneRangeRatio(value, min, max) {
+    if (!Number.isFinite(value) || max <= min) {
+      return 0;
+    }
+
+    return Math.min(1, Math.max(0, (value - min) / (max - min)));
+  }
+
+  function getLogToneRangeRatio(value, min, max) {
+    return getToneRangeRatio(Math.log10(value), Math.log10(min), Math.log10(max));
+  }
+
+  function getToneHue(score) {
+    return Math.round(TONE_HUE_RED + (TONE_HUE_GREEN - TONE_HUE_RED) * score);
+  }
+
+  function getViewToneHue(viewCount) {
+    return getToneHue(getLogToneRangeRatio(viewCount, VIEW_TONE_MIN, VIEW_TONE_MAX));
+  }
+
+  function getAgeToneHue(ageMs) {
+    const recencyScore = 1 - getToneRangeRatio(ageMs, AGE_TONE_MIN_MS, AGE_TONE_MAX_MS);
+    return getToneHue(recencyScore);
+  }
+
+  function getParsedMetadataValue(element, parser) {
+    const ariaValue = element.getAttribute("aria-label");
+    const parsedAriaValue = ariaValue ? parser(ariaValue) : null;
+
+    if (parsedAriaValue !== null) {
+      return parsedAriaValue;
+    }
+
+    return parser(element.textContent || "");
+  }
+
+  function setMetadataTone(element, attr, styleProperty, hue) {
+    const hueValue = String(hue);
+
+    if (element.getAttribute(attr) !== hueValue) {
+      element.setAttribute(attr, hueValue);
+    }
+
+    if (element.style.getPropertyValue(styleProperty) !== hueValue) {
+      element.style.setProperty(styleProperty, hueValue);
+    }
+  }
+
+  function clearMetadataTone(element, attr, styleProperty) {
+    if (element.hasAttribute(attr)) {
+      element.removeAttribute(attr);
+    }
+
+    if (element.style.getPropertyValue(styleProperty)) {
+      element.style.removeProperty(styleProperty);
+    }
+  }
+
+  function clearElementMetadataTones(element) {
+    clearMetadataTone(element, VIEW_TONE_ATTR, "--my-youtube-styler-view-hue");
+    clearMetadataTone(element, AGE_TONE_ATTR, "--my-youtube-styler-age-hue");
+  }
+
+  function clearMetadataColoring(feedPage) {
+    for (const element of feedPage.querySelectorAll(`[${VIEW_TONE_ATTR}], [${AGE_TONE_ATTR}]`)) {
+      clearElementMetadataTones(element);
+    }
+  }
+
+  function applyMetadataColoring(feedPage) {
+    if (!settings.colorVideoMetadata) {
+      clearMetadataColoring(feedPage);
+      return;
+    }
+
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+      const viewToneElements = new Set();
+      const ageToneElements = new Set();
+
+      for (const element of getCardStylableMetadataCandidates(card)) {
+        const viewCount = getParsedMetadataValue(element, parseViewCount);
+        const ageMs = getParsedMetadataValue(element, parseAgeMs);
+
+        if (viewCount !== null) {
+          viewToneElements.add(element);
+          setMetadataTone(element, VIEW_TONE_ATTR, "--my-youtube-styler-view-hue", getViewToneHue(viewCount));
+        }
+
+        if (ageMs !== null) {
+          ageToneElements.add(element);
+          setMetadataTone(element, AGE_TONE_ATTR, "--my-youtube-styler-age-hue", getAgeToneHue(ageMs));
+        }
+      }
+
+      for (const element of card.querySelectorAll(`[${VIEW_TONE_ATTR}], [${AGE_TONE_ATTR}]`)) {
+        if (!viewToneElements.has(element)) {
+          clearMetadataTone(element, VIEW_TONE_ATTR, "--my-youtube-styler-view-hue");
+        }
+
+        if (!ageToneElements.has(element)) {
+          clearMetadataTone(element, AGE_TONE_ATTR, "--my-youtube-styler-age-hue");
+        }
+      }
+    }
+  }
+
+  function getCardVideoLink(card) {
+    return card.querySelector('a[href*="/watch"][href*="v="]');
+  }
+
   function getCardVideoId(card) {
-    const link = card.querySelector('a[href*="/watch"][href*="v="]');
+    const link = getCardVideoLink(card);
     if (!link) {
       return null;
     }
@@ -1000,6 +1133,7 @@
     }
 
     ensureFilterControls(feedPage);
+    applyMetadataColoring(feedPage);
     applyDateFilter(feedPage);
     applyViewFilter(feedPage);
     applySeenHistoryFilter(feedPage);

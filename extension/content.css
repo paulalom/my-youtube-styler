@@ -48,6 +48,42 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
   line-height: calc(2rem - 2pt) !important;
 }
 
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-view-tone],
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-age-tone] {
+  font-weight: 500 !important;
+  transition: color 160ms ease;
+}
+
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-view-tone] {
+  color: hsl(var(--my-youtube-styler-view-hue, 132) 74% 45%) !important;
+}
+
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-age-tone] {
+  color: hsl(var(--my-youtube-styler-age-hue, 132) 74% 45%) !important;
+}
+
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-view-tone] *,
+.my-youtube-styler-feed-page ytd-rich-item-renderer [data-my-youtube-styler-age-tone] * {
+  color: inherit !important;
+}
+
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) {
+  align-items: center !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelLeadingIcon),
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
+  flex: 0 0 100% !important;
+  font-size: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  width: 100% !important;
+}
+
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href^="/shorts"]) {

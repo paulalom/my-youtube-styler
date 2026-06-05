@@ -9,6 +9,7 @@ const defaultSettings = {
   hideShorts: true,
   hideYouMightLike: true,
   hideExploreMoreTopics: true,
+  colorVideoMetadata: true,
   hidePlaylists: false,
   rememberSeenVideos: false
 };

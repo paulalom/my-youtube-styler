@@ -8,12 +8,14 @@ The extension runs only in your browser, stores settings locally, and does not m
 
 - Shows 6 videos per row on the YouTube Home and Subscriptions feeds.
 - Shrinks card avatars, title text, and metadata text slightly.
+- Colors visible view counts and video ages from green to red based on popularity and freshness.
 - Adds date filters for videos newer than 7 days, 1 month, 1 year, or 5 years.
 - Adds minimum and maximum view-count filters from 1K through 1B views.
 - Remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Hides Shorts, topic shelves, playlists, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
   - Compact thumbnails, icons, and text
+  - Color views and age
   - Hide paid/member videos
   - Hide Shorts
   - Hide You might like sections
