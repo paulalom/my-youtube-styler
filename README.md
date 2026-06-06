@@ -84,6 +84,7 @@ You can also create an unsigned local package for inspection with `npm run build
 - Settings are stored in Firefox extension storage.
 - Selected inline date/view filters are stored only in the YouTube tab session.
 - Seen-video history stores video IDs with last-seen timestamps, prunes entries older than 7 days, and is never uploaded anywhere.
+- Seen-video history is disabled in private browsing windows.
 
 ## Notes
 

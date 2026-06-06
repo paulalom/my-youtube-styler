@@ -25,6 +25,7 @@
   const TONE_HUE_GREEN = 132;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
+  const isPrivateContext = Boolean(extensionApi?.extension?.inIncognitoContext);
 
   const defaultSettings = {
     compactLayout: true,
@@ -191,6 +192,14 @@
   }
 
   async function loadSeenHistory() {
+    if (isPrivateContext) {
+      seenHistory = {};
+      updateHiddenSeenVideoIds();
+      disconnectSeenObserver();
+      scheduleApply();
+      return;
+    }
+
     const result = await getLocal(SEEN_HISTORY_STORAGE_KEY);
     const rawHistory = normalizeSeenHistory(result[SEEN_HISTORY_STORAGE_KEY]);
     const prunedHistory = pruneSeenHistory(rawHistory);
@@ -1085,6 +1094,10 @@
   }
 
   function recordSeenVideo(videoId) {
+    if (isPrivateContext) {
+      return;
+    }
+
     if (currentPageSeenVideoIds.has(videoId)) {
       return;
     }
@@ -1107,6 +1120,11 @@
   }
 
   async function flushSeenHistory() {
+    if (isPrivateContext) {
+      discardPendingSeenHistory();
+      return;
+    }
+
     if (seenHistoryFlushInFlight || pendingSeenVideoIds.size === 0) {
       return;
     }
@@ -1209,7 +1227,7 @@
   }
 
   function applySeenHistoryFilter(feedPage) {
-    if (!settings.rememberSeenVideos) {
+    if (isPrivateContext || !settings.rememberSeenVideos) {
       disconnectSeenObserver();
 
       for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
