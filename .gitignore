@@ -1,5 +1,7 @@
 .web-extension-id
+extension/.amo-upload-uuid
 web-ext-artifacts/
+signed-releases/
 node_modules/
 *.zip
 *.xpi

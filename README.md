@@ -64,8 +64,15 @@ npm run lint
 Create API credentials in the AMO Developer Hub, then set them in the current PowerShell session:
 
 ```powershell
-$env:WEB_EXT_API_KEY = "your JWT issuer"
-$env:WEB_EXT_API_SECRET = "your JWT secret"
+Remove-Item Env:WEB_EXT_API_KEY -ErrorAction SilentlyContinue
+Remove-Item Env:WEB_EXT_API_SECRET -ErrorAction SilentlyContinue
+
+$env:WEB_EXT_API_KEY = (Read-Host "Paste JWT issuer").Trim()
+
+$secret = Read-Host "Paste JWT secret" -AsSecureString
+$ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secret)
+$env:WEB_EXT_API_SECRET = ([Runtime.InteropServices.Marshal]::PtrToStringBSTR($ptr)).Trim()
+[Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
 ```
 
 Submit and sign the extension for self-distribution:
@@ -74,7 +81,25 @@ Submit and sign the extension for self-distribution:
 npm run sign:firefox:unlisted
 ```
 
-The signed `.xpi` is written to `web-ext-artifacts/`. Open that file in Firefox to install it permanently. For each update, bump `extension/manifest.json`'s `version`, rerun the signing command, and install the new signed `.xpi`.
+The signed `.xpi` is written to `web-ext-artifacts/`. Open that file in Firefox to install it permanently. After signing, clear the credentials from the terminal session:
+
+```powershell
+Remove-Item Env:WEB_EXT_API_KEY
+Remove-Item Env:WEB_EXT_API_SECRET
+```
+
+To keep a named local copy of a successful signed build, copy it into `signed-releases/firefox/`. That folder is ignored by Git because signed packages are generated release artifacts:
+
+```powershell
+New-Item -ItemType Directory -Path signed-releases/firefox -Force
+Copy-Item web-ext-artifacts/*.xpi signed-releases/firefox/
+```
+
+The signed Firefox v0.7.2 XPI was saved locally at `signed-releases/firefox/d286352590454dc89781-0.7.2.xpi`.
+
+For each update, bump `extension/manifest.json`'s `version`, rerun the signing command, install the new signed `.xpi`, and preserve a copy in `signed-releases/firefox/` if desired.
+
+If signing fails with `Unauthorized` and `Error decoding signature`, regenerate or recopy the AMO JWT issuer and JWT secret as a matching pair, then rerun the signing command.
 
 You can also create an unsigned local package for inspection with `npm run build`, but regular Firefox will only install the signed `.xpi`.
 
