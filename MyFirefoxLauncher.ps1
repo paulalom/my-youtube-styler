@@ -1,7 +1,7 @@
 param(
   [string] $FirefoxPath = $env:MY_YOUTUBE_STYLER_FIREFOX,
   [string] $ProfilePath = $env:MY_YOUTUBE_STYLER_FIREFOX_PROFILE,
-  [string] $StartUrl = "https://www.youtube.com/",
+  [string] $StartUrl = $env:MY_YOUTUBE_STYLER_START_URL,
   [switch] $UseTemporaryProfile,
   [switch] $UsePersistentLauncherProfile,
   [switch] $AllowFirefoxProfilePreferenceChanges,
@@ -44,13 +44,26 @@ function Resolve-FirefoxExecutable([string] $PreferredPath) {
 }
 
 function Get-LocalWebExtCommand([string] $RepoRoot) {
-  $localCommand = Join-Path $RepoRoot "node_modules\.bin\web-ext.cmd"
+  $localCommand = Join-Path $RepoRoot "node_modules\web-ext\lib\firefox\remote.js"
 
   if (Test-Path -LiteralPath $localCommand -PathType Leaf) {
     return $localCommand
   }
 
   return $null
+}
+
+function Resolve-NodeExecutable {
+  $node = Get-Command "node.exe" -ErrorAction SilentlyContinue
+  if (-not $node) {
+    $node = Get-Command "node" -ErrorAction SilentlyContinue
+  }
+
+  if (-not $node) {
+    throw "Node.js was not found. Install Node.js, then run npm install in this repo."
+  }
+
+  return $node.Source
 }
 
 function Read-IniSections([string] $Path) {
@@ -172,9 +185,14 @@ function Install-NodeDependencies([string] $RepoRoot) {
 $repoRoot = Split-Path -Parent $PSCommandPath
 $extensionDir = Join-Path $repoRoot "extension"
 $manifestPath = Join-Path $extensionDir "manifest.json"
+$launcherScript = Join-Path $repoRoot "scripts\launch-firefox.mjs"
 
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
   throw "Could not find extension manifest at $manifestPath."
+}
+
+if (-not (Test-Path -LiteralPath $launcherScript -PathType Leaf)) {
+  throw "Could not find launcher helper at $launcherScript."
 }
 
 if ($UseTemporaryProfile -and ($UsePersistentLauncherProfile -or $ProfilePath)) {
@@ -237,32 +255,34 @@ if (-not $webExtCommand) {
 }
 
 if (-not $webExtCommand) {
-  throw "Local web-ext command was not found after installing dependencies."
+  throw "Local web-ext dependency files were not found after installing dependencies."
 }
 
+$nodeExecutable = Resolve-NodeExecutable
 $firefoxExecutable = Resolve-FirefoxExecutable $FirefoxPath
 
-$webExtArgs = @(
-  "run",
-  "--source-dir=$extensionDir",
-  "--target=firefox-desktop",
-  "--no-reload",
-  "--start-url=$StartUrl"
+$launcherArgs = @(
+  $launcherScript,
+  "--extension",
+  $extensionDir
 )
 
 if ($useCustomProfile) {
-  $webExtArgs += @(
-    "--firefox-profile=$profilePathFull",
-    "--keep-profile-changes"
-  )
-
-  if ($shouldCreateProfile) {
-    $webExtArgs += "--profile-create-if-missing"
-  }
+  $launcherArgs += @("--profile", $profilePathFull)
+} else {
+  $launcherArgs += "--temporary-profile"
 }
 
 if ($firefoxExecutable) {
-  $webExtArgs += "--firefox=$firefoxExecutable"
+  $launcherArgs += @("--firefox", $firefoxExecutable)
+}
+
+if ($StartUrl) {
+  $launcherArgs += @("--start-url", $StartUrl)
+}
+
+if ($DryRun) {
+  $launcherArgs += "--dry-run"
 }
 
 Write-Host "Launching Firefox with My YouTube Styler attached..."
@@ -276,16 +296,8 @@ if ($useCustomProfile) {
 if ($firefoxExecutable) {
   Write-Host "Firefox: $firefoxExecutable"
 } else {
-  Write-Host "Firefox: default Firefox detected by web-ext"
+  Write-Host "Firefox: default Firefox detected by launcher helper"
 }
 
-if ($DryRun) {
-  Write-Host "Dry run only. Firefox was not launched."
-  Write-Host "Command: $webExtCommand"
-  Write-Host "Arguments:"
-  $webExtArgs | ForEach-Object { Write-Host "  $_" }
-  exit 0
-}
-
-& $webExtCommand @webExtArgs
+& $nodeExecutable @launcherArgs
 exit $LASTEXITCODE

@@ -60,9 +60,11 @@ For personal daily use without submitting the extension for signing, use the inc
 .\MyFirefoxLauncher.cmd
 ```
 
-The launcher uses Mozilla's `web-ext` tool to open your installed Firefox with this extension temporarily attached. By default, it resolves Firefox's normal default profile from `%APPDATA%\Mozilla\Firefox\installs.ini` or `profiles.ini`, so it launches with the same bookmarks, cookies, logins, extensions, and settings as your normal Firefox button.
+The launcher opens your installed Firefox with this extension temporarily attached. By default, it resolves Firefox's normal default profile from `%APPDATA%\Mozilla\Firefox\installs.ini` or `profiles.ini`, so it launches with the same bookmarks, cookies, logins, extensions, and settings as your normal Firefox button.
 
-Because the add-on is still unsigned and temporary, Firefox needs to be started through `web-ext` for the extension to attach automatically. `web-ext --keep-profile-changes` is used with the default profile so the real profile is used directly instead of copied. This may leave Firefox debugging preferences set in that profile.
+Because the add-on is still unsigned and temporary, Firefox needs its DevTools temporary-add-on API enabled during startup. The launcher temporarily sets the minimum startup prefs needed for that API, starts Firefox with `-start-debugger-server`, attaches the extension, disconnects the launcher client, restores those prefs on disk immediately, and restores them again after Firefox exits in case Firefox rewrites `prefs.js` during shutdown.
+
+Firefox may still show its remote-control indicator for that browser session because the DevTools server was started from the command line. The launcher does not keep an active remote-control client connected after the extension is attached.
 
 Use the launcher when starting Firefox from a closed state. If Firefox is already running without the launcher, close it and relaunch through `MyFirefoxLauncher.cmd` so the extension can attach.
 
@@ -90,8 +92,9 @@ Optional environment variables:
 
 - `MY_YOUTUBE_STYLER_FIREFOX`: absolute path to `firefox.exe` if Firefox is not in the usual install location.
 - `MY_YOUTUBE_STYLER_FIREFOX_PROFILE`: custom launcher profile directory. Setting this automatically uses that profile instead of the normal Firefox default profile.
+- `MY_YOUTUBE_STYLER_START_URL`: optional URL to open when Firefox starts. If unset, Firefox uses its normal startup behavior.
 
-When a custom launcher profile is set inside Firefox's normal profile directory, the script refuses to use it unless you pass `-AllowFirefoxProfilePreferenceChanges`, because `web-ext --keep-profile-changes` intentionally changes profile preferences for extension debugging.
+When a custom launcher profile is set inside Firefox's normal profile directory, the script refuses to use it unless you pass `-AllowFirefoxProfilePreferenceChanges`, because the launcher temporarily edits startup preferences for extension debugging.
 
 To verify the launcher command without opening Firefox:
 
