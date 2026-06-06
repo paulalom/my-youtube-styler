@@ -41,7 +41,7 @@ Firefox v0.6.4 examples:
 
 ## Install In Firefox
 
-This is an unsigned local extension, so the simplest way to try it is as a temporary Firefox add-on.
+During development, the quickest way to try the extension is as a temporary Firefox add-on.
 
 1. Download or clone this repo.
 2. Open Firefox.
@@ -52,55 +52,31 @@ This is an unsigned local extension, so the simplest way to try it is as a tempo
 
 Temporary add-ons are unloaded when Firefox restarts. During development, reload the temporary add-on from the same Firefox debugging page after pulling changes or editing extension files.
 
-## Launch In Firefox Automatically
+## Sign For Firefox
 
-For personal daily use without submitting the extension for signing, use the included launcher:
-
-```powershell
-.\MyFirefoxLauncher.cmd
-```
-
-The launcher opens your installed Firefox with this extension temporarily attached. By default, it resolves Firefox's normal default profile from `%APPDATA%\Mozilla\Firefox\installs.ini` or `profiles.ini`, so it launches with the same bookmarks, cookies, logins, extensions, and settings as your normal Firefox button.
-
-Because the add-on is still unsigned and temporary, Firefox needs its DevTools temporary-add-on API enabled during startup. The launcher temporarily sets the minimum startup prefs needed for that API, starts Firefox with `-start-debugger-server`, attaches the extension, disconnects the launcher client, restores those prefs on disk immediately, and restores them again after Firefox exits in case Firefox rewrites `prefs.js` during shutdown.
-
-Firefox may still show its remote-control indicator for that browser session because the DevTools server was started from the command line. The launcher does not keep an active remote-control client connected after the extension is attached.
-
-Use the launcher when starting Firefox from a closed state. If Firefox is already running without the launcher, close it and relaunch through `MyFirefoxLauncher.cmd` so the extension can attach.
-
-To test with a throwaway browser profile instead of your normal Firefox profile:
+For personal daily use in regular Firefox without a remote-control indicator, sign the extension as an unlisted/self-distributed add-on. This submits the package to Mozilla for signing, but it does not create a public AMO listing.
 
 ```powershell
-.\MyFirefoxLauncher.ps1 -UseTemporaryProfile
+npm install
+npm run lint
 ```
 
-To use a dedicated launcher profile instead of your normal Firefox profile:
+Create API credentials in the AMO Developer Hub, then set them in the current PowerShell session:
 
 ```powershell
-.\MyFirefoxLauncher.ps1 -UsePersistentLauncherProfile
+$env:WEB_EXT_API_KEY = "your JWT issuer"
+$env:WEB_EXT_API_SECRET = "your JWT secret"
 ```
 
-The dedicated launcher profile is stored at:
-
-```text
-%LOCALAPPDATA%\MyYouTubeStyler\FirefoxLauncherProfile
-```
-
-The first run installs the pinned local `web-ext` dependency with `npm install` if `node_modules` is missing.
-
-Optional environment variables:
-
-- `MY_YOUTUBE_STYLER_FIREFOX`: absolute path to `firefox.exe` if Firefox is not in the usual install location.
-- `MY_YOUTUBE_STYLER_FIREFOX_PROFILE`: custom launcher profile directory. Setting this automatically uses that profile instead of the normal Firefox default profile.
-- `MY_YOUTUBE_STYLER_START_URL`: optional URL to open when Firefox starts. If unset, Firefox uses its normal startup behavior.
-
-When a custom launcher profile is set inside Firefox's normal profile directory, the script refuses to use it unless you pass `-AllowFirefoxProfilePreferenceChanges`, because the launcher temporarily edits startup preferences for extension debugging.
-
-To verify the launcher command without opening Firefox:
+Submit and sign the extension for self-distribution:
 
 ```powershell
-.\MyFirefoxLauncher.ps1 -DryRun
+npm run sign:firefox:unlisted
 ```
+
+The signed `.xpi` is written to `web-ext-artifacts/`. Open that file in Firefox to install it permanently. For each update, bump `extension/manifest.json`'s `version`, rerun the signing command, and install the new signed `.xpi`.
+
+You can also create an unsigned local package for inspection with `npm run build`, but regular Firefox will only install the signed `.xpi`.
 
 ## Privacy
 

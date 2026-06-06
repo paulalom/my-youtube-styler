@@ -5,7 +5,8 @@
   "description": "Local YouTube feed styling and filtering tweaks.",
   "scripts": {
     "lint": "web-ext lint --source-dir extension",
-    "launch:firefox": "powershell -NoProfile -ExecutionPolicy Bypass -File ./MyFirefoxLauncher.ps1"
+    "build": "web-ext build --source-dir extension --artifacts-dir web-ext-artifacts --overwrite-dest",
+    "sign:firefox:unlisted": "web-ext sign --source-dir extension --artifacts-dir web-ext-artifacts --channel unlisted"
   },
   "devDependencies": {
     "web-ext": "10.3.0"
