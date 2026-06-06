@@ -11,7 +11,7 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Colors visible view counts and video ages from green to red based on popularity and freshness.
 - Adds date filters for videos newer than 7 days, 1 month, 1 year, or 5 years.
 - Adds minimum and maximum view-count filters from 1K through 1B views.
-- Remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
+- Optionally remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Routes thumbnail-overlay clicks, including paid-promotion overlays, to the video page.
 - Hides Shorts, topic shelves, YouTube featured shelves, playlists, YouTube's bottom-right miniplayer, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
@@ -54,7 +54,7 @@ Temporary add-ons are unloaded when Firefox restarts. During development, reload
 
 ## Sign For Firefox
 
-For personal daily use in regular Firefox without a remote-control indicator, sign the extension as an unlisted/self-distributed add-on. This submits the package to Mozilla for signing, but it does not create a public AMO listing.
+For personal daily use in regular Firefox, sign the extension as an unlisted/self-distributed add-on. This submits the package to Mozilla for signing, but it does not create a public AMO listing.
 
 ```powershell
 npm install
@@ -108,8 +108,8 @@ You can also create an unsigned local package for inspection with `npm run build
 - No network requests are made by the extension.
 - Settings are stored in Firefox extension storage.
 - Selected inline date/view filters are stored only in the YouTube tab session.
-- Seen-video history stores video IDs with last-seen timestamps, prunes entries older than 7 days, and is never uploaded anywhere.
-- Seen-video history is disabled in private browsing windows.
+- Seen-video history is opt-in. When enabled, it stores video IDs with last-seen timestamps, prunes entries older than 7 days, and is never uploaded anywhere.
+- Seen-video history is disabled in private browsing windows, even when the setting is enabled.
 
 ## Notes
 
