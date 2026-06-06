@@ -6,6 +6,7 @@
   const SUBSCRIPTIONS_FILTER_ANCHOR_ID = "my-youtube-styler-subscriptions-filter-anchor";
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
+  const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
@@ -748,6 +749,35 @@
     ];
   }
 
+  function getCardBadgeTextCandidates(card) {
+    return [
+      ...card.querySelectorAll(
+        [
+          ".ytBadgeShapeText",
+          ".badge-shape-wiz__text",
+          "ytd-badge-supported-renderer",
+          "yt-badge-view-model",
+          "badge-shape"
+        ].join(", ")
+      )
+    ];
+  }
+
+  function isPaidBadgeText(text) {
+    const normalized = normalizeText(text).toLowerCase();
+
+    return (
+      normalized === "members only" ||
+      normalized === "youtube premium" ||
+      normalized === "buy or rent" ||
+      normalized === "purchase"
+    );
+  }
+
+  function hasPaidBadgeText(card) {
+    return getCardBadgeTextCandidates(card).some((element) => isPaidBadgeText(element.textContent || ""));
+  }
+
   function getCardStylableMetadataCandidates(card) {
     return [
       ...card.querySelectorAll(
@@ -1158,6 +1188,24 @@
     }
   }
 
+  function applyPaidVideoFilter(feedPage) {
+    if (!settings.hidePaidVideos) {
+      for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+        card.removeAttribute(PAID_HIDDEN_ATTR);
+      }
+
+      return;
+    }
+
+    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+      if (hasPaidBadgeText(card)) {
+        card.setAttribute(PAID_HIDDEN_ATTR, "");
+      } else {
+        card.removeAttribute(PAID_HIDDEN_ATTR);
+      }
+    }
+  }
+
   function applySeenHistoryFilter(feedPage) {
     if (!settings.rememberSeenVideos) {
       disconnectSeenObserver();
@@ -1234,6 +1282,7 @@
 
     ensureFilterControls(feedPage);
     applyMetadataColoring(feedPage);
+    applyPaidVideoFilter(feedPage);
     applyDateFilter(feedPage);
     applyViewFilter(feedPage);
     applySeenHistoryFilter(feedPage);
