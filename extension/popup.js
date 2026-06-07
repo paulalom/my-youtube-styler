@@ -1,6 +1,7 @@
 const extensionApi = globalThis.browser || globalThis.chrome;
 const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
 const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
+const MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
 const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
 
 const defaultSettings = {
@@ -78,7 +79,7 @@ async function initializePopup() {
   let settings = normalizeSettings(result[SETTINGS_STORAGE_KEY]);
 
   applyToForm(settings);
-  await updateSeenHistoryStatus();
+  await updateSeenHistoryStatuses();
 
   for (const input of document.querySelectorAll("input[data-setting]")) {
     input.addEventListener("change", async () => {
@@ -92,6 +93,7 @@ async function initializePopup() {
   }
 
   document.getElementById("clear-history")?.addEventListener("click", clearSeenHistory);
+  document.getElementById("clear-manual-seen")?.addEventListener("click", clearManualSeenHistory);
   document.getElementById("reset-filters")?.addEventListener("click", resetInlineFilters);
 }
 
@@ -108,6 +110,29 @@ async function clearSeenHistory() {
 
   if (status) {
     status.textContent = "History cleared.";
+  }
+
+  if (button) {
+    button.textContent = "Clear";
+    window.setTimeout(() => {
+      button.disabled = false;
+    }, 500);
+  }
+}
+
+async function clearManualSeenHistory() {
+  const button = document.getElementById("clear-manual-seen");
+  const status = document.getElementById("clear-manual-seen-status");
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Clearing";
+  }
+
+  await setLocal({ [MANUAL_SEEN_STORAGE_KEY]: {} });
+
+  if (status) {
+    status.textContent = "Manual list cleared.";
   }
 
   if (button) {
@@ -141,20 +166,32 @@ async function resetInlineFilters() {
   }
 }
 
-async function updateSeenHistoryStatus() {
-  const status = document.getElementById("clear-history-status");
-  if (!status) {
+async function updateSeenHistoryStatuses() {
+  const autoStatus = document.getElementById("clear-history-status");
+  const manualStatus = document.getElementById("clear-manual-seen-status");
+  if (!autoStatus && !manualStatus) {
     return;
   }
 
-  const result = await getLocal(SEEN_HISTORY_STORAGE_KEY);
+  const result = await getLocal([SEEN_HISTORY_STORAGE_KEY, MANUAL_SEEN_STORAGE_KEY]);
   const history = result[SEEN_HISTORY_STORAGE_KEY];
-  const count = history && typeof history === "object" ? Object.keys(history).length : 0;
+  const manualHistory = result[MANUAL_SEEN_STORAGE_KEY];
+  const autoCount = history && typeof history === "object" ? Object.keys(history).length : 0;
+  const manualCount = manualHistory && typeof manualHistory === "object" ? Object.keys(manualHistory).length : 0;
 
-  status.textContent =
-    count === 0
-      ? "History expires automatically after 7 days and is never uploaded anywhere."
-      : `${count} remembered. History expires automatically after 7 days and is never uploaded anywhere.`;
+  if (autoStatus) {
+    autoStatus.textContent =
+      autoCount === 0
+        ? "Auto history expires after 7 days and is never uploaded anywhere."
+        : `${autoCount} auto-remembered. Auto history expires after 7 days and is never uploaded anywhere.`;
+  }
+
+  if (manualStatus) {
+    manualStatus.textContent =
+      manualCount === 0
+        ? "Ctrl+click a Home or Subscriptions video to hide it until cleared."
+        : `${manualCount} manually watched. Ctrl+click more feed videos to add them.`;
+  }
 }
 
 initializePopup();

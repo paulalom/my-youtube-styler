@@ -13,6 +13,7 @@
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
   const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
   const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
+  const MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
   const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
   const VIEW_TONE_ATTR = "data-my-youtube-styler-view-tone";
   const AGE_TONE_ATTR = "data-my-youtube-styler-age-tone";
@@ -77,6 +78,7 @@
   let selectedMinViewsFilter = readStoredChoice(MIN_VIEWS_STORAGE_KEY, viewFilters, "all");
   let selectedMaxViewsFilter = readStoredChoice(MAX_VIEWS_STORAGE_KEY, viewFilters, "all");
   let seenHistory = {};
+  let manualSeenHistory = {};
   let hiddenSeenVideoIds = new Set();
   let currentPageSeenVideoIds = new Set();
   let seenHistoryFlushTimer = 0;
@@ -178,6 +180,12 @@
         scheduleApply();
       }
 
+      if (changes[MANUAL_SEEN_STORAGE_KEY]) {
+        manualSeenHistory = normalizeSeenHistory(changes[MANUAL_SEEN_STORAGE_KEY].newValue);
+        updateHiddenSeenVideoIds();
+        scheduleApply();
+      }
+
       if (changes[RESET_FILTERS_STORAGE_KEY]) {
         resetInlineFilters();
       }
@@ -214,6 +222,20 @@
     scheduleApply();
   }
 
+  async function loadManualSeenHistory() {
+    if (isPrivateContext) {
+      manualSeenHistory = {};
+      updateHiddenSeenVideoIds();
+      scheduleApply();
+      return;
+    }
+
+    const result = await getLocal(MANUAL_SEEN_STORAGE_KEY);
+    manualSeenHistory = normalizeSeenHistory(result[MANUAL_SEEN_STORAGE_KEY]);
+    updateHiddenSeenVideoIds();
+    scheduleApply();
+  }
+
   function normalizeSeenHistory(rawHistory) {
     if (!rawHistory || typeof rawHistory !== "object") {
       return {};
@@ -244,9 +266,10 @@
   }
 
   function updateHiddenSeenVideoIds() {
-    hiddenSeenVideoIds = new Set(
-      Object.keys(seenHistory).filter((videoId) => !currentPageSeenVideoIds.has(videoId))
-    );
+    hiddenSeenVideoIds = new Set([
+      ...Object.keys(seenHistory).filter((videoId) => !currentPageSeenVideoIds.has(videoId)),
+      ...Object.keys(manualSeenHistory)
+    ]);
   }
 
   function discardPendingSeenHistory() {
@@ -1100,6 +1123,42 @@
     followVideoLink(link, event);
   }
 
+  function isManualSeenClick(event) {
+    return (
+      event.type === "click" &&
+      event.button === 0 &&
+      event.ctrlKey &&
+      !event.metaKey &&
+      !event.shiftKey &&
+      !event.altKey
+    );
+  }
+
+  function handleManualSeenVideoClick(event) {
+    if (event.defaultPrevented || !isManualSeenClick(event)) {
+      return;
+    }
+
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const card = target?.closest?.("ytd-rich-item-renderer");
+
+    if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
+      return;
+    }
+
+    const videoId = getCardVideoId(card);
+
+    if (!videoId) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    recordManualSeenVideo(videoId);
+    card.setAttribute(SEEN_HIDDEN_ATTR, "");
+  }
+
   function ensureSeenObserver() {
     if (seenObserver || typeof IntersectionObserver !== "function") {
       return;
@@ -1147,6 +1206,31 @@
     seenHistory[videoId] = Date.now();
     pendingSeenVideoIds.add(videoId);
     scheduleSeenHistoryFlush();
+  }
+
+  async function recordManualSeenVideo(videoId) {
+    if (isPrivateContext || !videoId) {
+      return;
+    }
+
+    const timestamp = Date.now();
+    manualSeenHistory = {
+      ...manualSeenHistory,
+      [videoId]: timestamp
+    };
+    updateHiddenSeenVideoIds();
+    scheduleApply();
+
+    try {
+      const result = await getLocal(MANUAL_SEEN_STORAGE_KEY);
+      const mergedHistory = normalizeSeenHistory(result[MANUAL_SEEN_STORAGE_KEY]);
+      mergedHistory[videoId] = timestamp;
+      manualSeenHistory = mergedHistory;
+      updateHiddenSeenVideoIds();
+      await setLocal({ [MANUAL_SEEN_STORAGE_KEY]: mergedHistory });
+    } catch {
+      // The card stays hidden for this page even if extension storage is unavailable.
+    }
   }
 
   function scheduleSeenHistoryFlush() {
@@ -1268,7 +1352,7 @@
   }
 
   function applySeenHistoryFilter(feedPage) {
-    if (isPrivateContext || !settings.rememberSeenVideos) {
+    if (isPrivateContext) {
       disconnectSeenObserver();
 
       for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
@@ -1278,7 +1362,11 @@
       return;
     }
 
-    ensureSeenObserver();
+    if (settings.rememberSeenVideos) {
+      ensureSeenObserver();
+    } else {
+      disconnectSeenObserver();
+    }
 
     for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
       const videoId = getCardVideoId(card);
@@ -1295,7 +1383,7 @@
 
       card.removeAttribute(SEEN_HIDDEN_ATTR);
 
-      if (!currentPageSeenVideoIds.has(videoId)) {
+      if (settings.rememberSeenVideos && !currentPageSeenVideoIds.has(videoId)) {
         observeSeenCard(card, videoId);
       }
     }
@@ -1379,11 +1467,13 @@
   watchSettings();
   loadSettings();
   loadSeenHistory();
+  loadManualSeenHistory();
 
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
   window.addEventListener("yt-navigate-finish", handleNavigateFinish);
+  window.addEventListener("click", handleManualSeenVideoClick, true);
   window.addEventListener("click", handleThumbnailVideoClick, true);
   window.addEventListener("auxclick", handleThumbnailVideoClick, true);
   window.addEventListener("popstate", scheduleApply);

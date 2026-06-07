@@ -101,7 +101,7 @@
 
       <label class="setting">
         <span class="setting__text">
-          <strong>Remember seen feed videos</strong>
+          <strong>Auto-remember seen feed videos</strong>
           <small>Hide videos you saw on Home or Subscriptions for 7 days after the next feed load or refresh.</small>
         </span>
         <input type="checkbox" data-setting="rememberSeenVideos">
@@ -109,10 +109,18 @@
 
       <div class="setting setting--action">
         <span class="setting__text">
-          <strong>Seen-video history</strong>
-          <small id="clear-history-status">History expires automatically after 7 days and is never uploaded anywhere.</small>
+          <strong>Auto watched history</strong>
+          <small id="clear-history-status">Auto history expires after 7 days and is never uploaded anywhere.</small>
         </span>
         <button class="action-button" id="clear-history" type="button">Clear</button>
+      </div>
+
+      <div class="setting setting--action">
+        <span class="setting__text">
+          <strong>Manual watched videos</strong>
+          <small id="clear-manual-seen-status">Ctrl+click a Home or Subscriptions video to hide it until cleared.</small>
+        </span>
+        <button class="action-button" id="clear-manual-seen" type="button">Clear</button>
       </div>
 
       <div class="setting setting--action">
