@@ -976,6 +976,46 @@
     );
   }
 
+  function isPaidPromotionHelpUrl(href) {
+    if (!href) {
+      return false;
+    }
+
+    try {
+      const url = new URL(href, location.origin);
+      return (
+        url.hostname === "support.google.com" &&
+        url.pathname.startsWith("/youtube") &&
+        (url.pathname.includes("/answer/10588440") || url.searchParams.get("p") === "ppp")
+      );
+    } catch {
+      return href.includes("support.google.com/youtube") && href.includes("p=ppp");
+    }
+  }
+
+  function getPaidPromotionDisclosureTarget(target, card) {
+    const disclosure = target?.closest?.(
+      [
+        ".ytp-paid-content-overlay",
+        ".ytm-paid-content-overlay-renderer",
+        ".YtmPaidContentOverlayHost",
+        'a[href*="support.google.com/youtube" i][href*="p=ppp" i]',
+        'a[href*="support.google.com/youtube/answer/10588440" i]',
+        '[aria-label*="Includes paid promotion" i]',
+        '[title*="Includes paid promotion" i]'
+      ].join(", ")
+    );
+
+    if (disclosure && card.contains(disclosure)) {
+      return disclosure;
+    }
+
+    const helpLink = target?.closest?.("a[href]");
+    return helpLink && card.contains(helpLink) && isPaidPromotionHelpUrl(helpLink.getAttribute("href"))
+      ? helpLink
+      : null;
+  }
+
   function isPointInsideElement(event, element) {
     if (!element) {
       return false;
@@ -1048,8 +1088,9 @@
 
     const link = getCardVideoLink(card);
     const thumbnailTarget = getCardThumbnailTarget(card) || link;
+    const paidPromotionTarget = getPaidPromotionDisclosureTarget(target, card);
 
-    if (!link || !isPointInsideElement(event, thumbnailTarget)) {
+    if (!link || (!isPointInsideElement(event, thumbnailTarget) && !paidPromotionTarget)) {
       return;
     }
 
