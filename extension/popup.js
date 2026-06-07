@@ -1,7 +1,8 @@
 const extensionApi = globalThis.browser || globalThis.chrome;
 const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
 const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
-const MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
+const NOT_INTERESTED_STORAGE_KEY = "myYouTubeStylerNotInterestedVideos";
+const LEGACY_MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
 const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
 
 const defaultSettings = {
@@ -93,7 +94,7 @@ async function initializePopup() {
   }
 
   document.getElementById("clear-history")?.addEventListener("click", clearSeenHistory);
-  document.getElementById("clear-manual-seen")?.addEventListener("click", clearManualSeenHistory);
+  document.getElementById("clear-not-interested")?.addEventListener("click", clearNotInterestedHistory);
   document.getElementById("reset-filters")?.addEventListener("click", resetInlineFilters);
 }
 
@@ -120,19 +121,22 @@ async function clearSeenHistory() {
   }
 }
 
-async function clearManualSeenHistory() {
-  const button = document.getElementById("clear-manual-seen");
-  const status = document.getElementById("clear-manual-seen-status");
+async function clearNotInterestedHistory() {
+  const button = document.getElementById("clear-not-interested");
+  const status = document.getElementById("clear-not-interested-status");
 
   if (button) {
     button.disabled = true;
     button.textContent = "Clearing";
   }
 
-  await setLocal({ [MANUAL_SEEN_STORAGE_KEY]: {} });
+  await setLocal({
+    [NOT_INTERESTED_STORAGE_KEY]: {},
+    [LEGACY_MANUAL_SEEN_STORAGE_KEY]: {}
+  });
 
   if (status) {
-    status.textContent = "Manual list cleared.";
+    status.textContent = "Local not interested list cleared.";
   }
 
   if (button) {
@@ -168,16 +172,25 @@ async function resetInlineFilters() {
 
 async function updateSeenHistoryStatuses() {
   const autoStatus = document.getElementById("clear-history-status");
-  const manualStatus = document.getElementById("clear-manual-seen-status");
-  if (!autoStatus && !manualStatus) {
+  const notInterestedStatus = document.getElementById("clear-not-interested-status");
+  if (!autoStatus && !notInterestedStatus) {
     return;
   }
 
-  const result = await getLocal([SEEN_HISTORY_STORAGE_KEY, MANUAL_SEEN_STORAGE_KEY]);
+  const result = await getLocal([
+    SEEN_HISTORY_STORAGE_KEY,
+    NOT_INTERESTED_STORAGE_KEY,
+    LEGACY_MANUAL_SEEN_STORAGE_KEY
+  ]);
   const history = result[SEEN_HISTORY_STORAGE_KEY];
-  const manualHistory = result[MANUAL_SEEN_STORAGE_KEY];
+  const legacyNotInterestedHistory = result[LEGACY_MANUAL_SEEN_STORAGE_KEY];
+  const notInterestedHistory = result[NOT_INTERESTED_STORAGE_KEY];
+  const mergedNotInterestedHistory = {
+    ...(legacyNotInterestedHistory && typeof legacyNotInterestedHistory === "object" ? legacyNotInterestedHistory : {}),
+    ...(notInterestedHistory && typeof notInterestedHistory === "object" ? notInterestedHistory : {})
+  };
   const autoCount = history && typeof history === "object" ? Object.keys(history).length : 0;
-  const manualCount = manualHistory && typeof manualHistory === "object" ? Object.keys(manualHistory).length : 0;
+  const notInterestedCount = Object.keys(mergedNotInterestedHistory).length;
 
   if (autoStatus) {
     autoStatus.textContent =
@@ -186,11 +199,11 @@ async function updateSeenHistoryStatuses() {
         : `${autoCount} auto-remembered. Auto history expires after 7 days and is never uploaded anywhere.`;
   }
 
-  if (manualStatus) {
-    manualStatus.textContent =
-      manualCount === 0
-        ? "Ctrl+click a Home or Subscriptions video to hide it until cleared."
-        : `${manualCount} manually watched. Ctrl+click more feed videos to add them.`;
+  if (notInterestedStatus) {
+    notInterestedStatus.textContent =
+      notInterestedCount === 0
+        ? "Ctrl+click a feed video to hide it locally; no feedback is sent to YouTube."
+        : `${notInterestedCount} hidden locally. This does not send feedback to YouTube.`;
   }
 }
 

@@ -13,7 +13,8 @@
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
   const SETTINGS_STORAGE_KEY = "myYouTubeStylerSettings";
   const SEEN_HISTORY_STORAGE_KEY = "myYouTubeStylerSeenVideos";
-  const MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
+  const NOT_INTERESTED_STORAGE_KEY = "myYouTubeStylerNotInterestedVideos";
+  const LEGACY_MANUAL_SEEN_STORAGE_KEY = "myYouTubeStylerManualSeenVideos";
   const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
   const VIEW_TONE_ATTR = "data-my-youtube-styler-view-tone";
   const AGE_TONE_ATTR = "data-my-youtube-styler-age-tone";
@@ -78,7 +79,7 @@
   let selectedMinViewsFilter = readStoredChoice(MIN_VIEWS_STORAGE_KEY, viewFilters, "all");
   let selectedMaxViewsFilter = readStoredChoice(MAX_VIEWS_STORAGE_KEY, viewFilters, "all");
   let seenHistory = {};
-  let manualSeenHistory = {};
+  let notInterestedHistory = {};
   let hiddenSeenVideoIds = new Set();
   let currentPageSeenVideoIds = new Set();
   let seenHistoryFlushTimer = 0;
@@ -180,8 +181,13 @@
         scheduleApply();
       }
 
-      if (changes[MANUAL_SEEN_STORAGE_KEY]) {
-        manualSeenHistory = normalizeSeenHistory(changes[MANUAL_SEEN_STORAGE_KEY].newValue);
+      if (changes[NOT_INTERESTED_STORAGE_KEY] || changes[LEGACY_MANUAL_SEEN_STORAGE_KEY]) {
+        notInterestedHistory = changes[NOT_INTERESTED_STORAGE_KEY]
+          ? normalizeSeenHistory(changes[NOT_INTERESTED_STORAGE_KEY].newValue)
+          : {
+              ...notInterestedHistory,
+              ...normalizeSeenHistory(changes[LEGACY_MANUAL_SEEN_STORAGE_KEY].newValue)
+            };
         updateHiddenSeenVideoIds();
         scheduleApply();
       }
@@ -222,17 +228,31 @@
     scheduleApply();
   }
 
-  async function loadManualSeenHistory() {
+  async function loadNotInterestedHistory() {
     if (isPrivateContext) {
-      manualSeenHistory = {};
+      notInterestedHistory = {};
       updateHiddenSeenVideoIds();
       scheduleApply();
       return;
     }
 
-    const result = await getLocal(MANUAL_SEEN_STORAGE_KEY);
-    manualSeenHistory = normalizeSeenHistory(result[MANUAL_SEEN_STORAGE_KEY]);
+    const result = await getLocal([NOT_INTERESTED_STORAGE_KEY, LEGACY_MANUAL_SEEN_STORAGE_KEY]);
+    const legacyHistory = normalizeSeenHistory(result[LEGACY_MANUAL_SEEN_STORAGE_KEY]);
+    const migratedHistory = {
+      ...legacyHistory,
+      ...normalizeSeenHistory(result[NOT_INTERESTED_STORAGE_KEY])
+    };
+
+    notInterestedHistory = migratedHistory;
     updateHiddenSeenVideoIds();
+
+    if (Object.keys(legacyHistory).length > 0) {
+      await setLocal({
+        [NOT_INTERESTED_STORAGE_KEY]: migratedHistory,
+        [LEGACY_MANUAL_SEEN_STORAGE_KEY]: {}
+      });
+    }
+
     scheduleApply();
   }
 
@@ -268,7 +288,7 @@
   function updateHiddenSeenVideoIds() {
     hiddenSeenVideoIds = new Set([
       ...Object.keys(seenHistory).filter((videoId) => !currentPageSeenVideoIds.has(videoId)),
-      ...Object.keys(manualSeenHistory)
+      ...Object.keys(notInterestedHistory)
     ]);
   }
 
@@ -1123,7 +1143,7 @@
     followVideoLink(link, event);
   }
 
-  function isManualSeenClick(event) {
+  function isNotInterestedClick(event) {
     return (
       event.type === "click" &&
       event.button === 0 &&
@@ -1134,8 +1154,8 @@
     );
   }
 
-  function handleManualSeenVideoClick(event) {
-    if (event.defaultPrevented || !isManualSeenClick(event)) {
+  function handleNotInterestedVideoClick(event) {
+    if (event.defaultPrevented || !isNotInterestedClick(event)) {
       return;
     }
 
@@ -1155,7 +1175,7 @@
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    recordManualSeenVideo(videoId);
+    recordNotInterestedVideo(videoId);
     card.setAttribute(SEEN_HIDDEN_ATTR, "");
   }
 
@@ -1208,26 +1228,33 @@
     scheduleSeenHistoryFlush();
   }
 
-  async function recordManualSeenVideo(videoId) {
+  async function recordNotInterestedVideo(videoId) {
     if (isPrivateContext || !videoId) {
       return;
     }
 
     const timestamp = Date.now();
-    manualSeenHistory = {
-      ...manualSeenHistory,
+    notInterestedHistory = {
+      ...notInterestedHistory,
       [videoId]: timestamp
     };
     updateHiddenSeenVideoIds();
     scheduleApply();
 
     try {
-      const result = await getLocal(MANUAL_SEEN_STORAGE_KEY);
-      const mergedHistory = normalizeSeenHistory(result[MANUAL_SEEN_STORAGE_KEY]);
+      const result = await getLocal([NOT_INTERESTED_STORAGE_KEY, LEGACY_MANUAL_SEEN_STORAGE_KEY]);
+      const mergedHistory = {
+        ...normalizeSeenHistory(result[LEGACY_MANUAL_SEEN_STORAGE_KEY]),
+        ...normalizeSeenHistory(result[NOT_INTERESTED_STORAGE_KEY])
+      };
+
       mergedHistory[videoId] = timestamp;
-      manualSeenHistory = mergedHistory;
+      notInterestedHistory = mergedHistory;
       updateHiddenSeenVideoIds();
-      await setLocal({ [MANUAL_SEEN_STORAGE_KEY]: mergedHistory });
+      await setLocal({
+        [NOT_INTERESTED_STORAGE_KEY]: mergedHistory,
+        [LEGACY_MANUAL_SEEN_STORAGE_KEY]: {}
+      });
     } catch {
       // The card stays hidden for this page even if extension storage is unavailable.
     }
@@ -1467,13 +1494,13 @@
   watchSettings();
   loadSettings();
   loadSeenHistory();
-  loadManualSeenHistory();
+  loadNotInterestedHistory();
 
   const observer = new MutationObserver(scheduleApply);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
   window.addEventListener("yt-navigate-finish", handleNavigateFinish);
-  window.addEventListener("click", handleManualSeenVideoClick, true);
+  window.addEventListener("click", handleNotInterestedVideoClick, true);
   window.addEventListener("click", handleThumbnailVideoClick, true);
   window.addEventListener("auxclick", handleThumbnailVideoClick, true);
   window.addEventListener("popstate", scheduleApply);
