@@ -20,7 +20,10 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "id": "my-youtube-styler@local"
+      "id": "my-youtube-styler@local",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "content_scripts": [

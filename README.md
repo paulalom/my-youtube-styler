@@ -52,6 +52,43 @@ This is an unsigned local extension, so the simplest way to try it is as a tempo
 
 Temporary add-ons are unloaded when Firefox restarts. During development, reload the temporary add-on from the same Firefox debugging page after pulling changes or editing extension files.
 
+## Launch In Firefox Automatically
+
+For personal daily use without submitting the extension for signing, use the included launcher:
+
+```powershell
+.\MyFirefoxLauncher.cmd
+```
+
+The launcher uses Mozilla's `web-ext` tool to open your installed Firefox with this extension temporarily attached. By default, it lets `web-ext` use a temporary browser profile, which keeps the launcher from changing your normal Firefox profile. The tradeoff is that browser state in that launched window is temporary.
+
+If you want the launcher window to remember YouTube login, extension settings, and browsing state between launches, opt into a dedicated launcher profile:
+
+```powershell
+.\MyFirefoxLauncher.ps1 -UsePersistentLauncherProfile
+```
+
+That profile is stored at:
+
+```text
+%LOCALAPPDATA%\MyYouTubeStyler\FirefoxLauncherProfile
+```
+
+The first run installs the pinned local `web-ext` dependency with `npm install` if `node_modules` is missing.
+
+Optional environment variables:
+
+- `MY_YOUTUBE_STYLER_FIREFOX`: absolute path to `firefox.exe` if Firefox is not in the usual install location.
+- `MY_YOUTUBE_STYLER_FIREFOX_PROFILE`: custom launcher profile directory. Setting this automatically enables persistent launcher profile mode.
+
+When persistent launcher profile mode is enabled, the script refuses to run against a normal Firefox profile unless you pass `-AllowFirefoxProfilePreferenceChanges`, because `web-ext --keep-profile-changes` intentionally changes profile preferences for extension debugging.
+
+To verify the launcher command without opening Firefox:
+
+```powershell
+.\MyFirefoxLauncher.ps1 -DryRun
+```
+
 ## Privacy
 
 - No network requests are made by the extension.

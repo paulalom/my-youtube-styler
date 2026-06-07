@@ -1,0 +1,13 @@
+{
+  "name": "my-youtube-styler",
+  "version": "0.7.2",
+  "private": true,
+  "description": "Local YouTube feed styling and filtering tweaks.",
+  "scripts": {
+    "lint": "web-ext lint --source-dir extension",
+    "launch:firefox": "powershell -NoProfile -ExecutionPolicy Bypass -File ./MyFirefoxLauncher.ps1"
+  },
+  "devDependencies": {
+    "web-ext": "10.3.0"
+  }
+}
