@@ -60,15 +60,25 @@ For personal daily use without submitting the extension for signing, use the inc
 .\MyFirefoxLauncher.cmd
 ```
 
-The launcher uses Mozilla's `web-ext` tool to open your installed Firefox with this extension temporarily attached. By default, it lets `web-ext` use a temporary browser profile, which keeps the launcher from changing your normal Firefox profile. The tradeoff is that browser state in that launched window is temporary.
+The launcher uses Mozilla's `web-ext` tool to open your installed Firefox with this extension temporarily attached. By default, it resolves Firefox's normal default profile from `%APPDATA%\Mozilla\Firefox\installs.ini` or `profiles.ini`, so it launches with the same bookmarks, cookies, logins, extensions, and settings as your normal Firefox button.
 
-If you want the launcher window to remember YouTube login, extension settings, and browsing state between launches, opt into a dedicated launcher profile:
+Because the add-on is still unsigned and temporary, Firefox needs to be started through `web-ext` for the extension to attach automatically. `web-ext --keep-profile-changes` is used with the default profile so the real profile is used directly instead of copied. This may leave Firefox debugging preferences set in that profile.
+
+Use the launcher when starting Firefox from a closed state. If Firefox is already running without the launcher, close it and relaunch through `MyFirefoxLauncher.cmd` so the extension can attach.
+
+To test with a throwaway browser profile instead of your normal Firefox profile:
+
+```powershell
+.\MyFirefoxLauncher.ps1 -UseTemporaryProfile
+```
+
+To use a dedicated launcher profile instead of your normal Firefox profile:
 
 ```powershell
 .\MyFirefoxLauncher.ps1 -UsePersistentLauncherProfile
 ```
 
-That profile is stored at:
+The dedicated launcher profile is stored at:
 
 ```text
 %LOCALAPPDATA%\MyYouTubeStyler\FirefoxLauncherProfile
@@ -79,9 +89,9 @@ The first run installs the pinned local `web-ext` dependency with `npm install` 
 Optional environment variables:
 
 - `MY_YOUTUBE_STYLER_FIREFOX`: absolute path to `firefox.exe` if Firefox is not in the usual install location.
-- `MY_YOUTUBE_STYLER_FIREFOX_PROFILE`: custom launcher profile directory. Setting this automatically enables persistent launcher profile mode.
+- `MY_YOUTUBE_STYLER_FIREFOX_PROFILE`: custom launcher profile directory. Setting this automatically uses that profile instead of the normal Firefox default profile.
 
-When persistent launcher profile mode is enabled, the script refuses to run against a normal Firefox profile unless you pass `-AllowFirefoxProfilePreferenceChanges`, because `web-ext --keep-profile-changes` intentionally changes profile preferences for extension debugging.
+When a custom launcher profile is set inside Firefox's normal profile directory, the script refuses to use it unless you pass `-AllowFirefoxProfilePreferenceChanges`, because `web-ext --keep-profile-changes` intentionally changes profile preferences for extension debugging.
 
 To verify the launcher command without opening Firefox:
 

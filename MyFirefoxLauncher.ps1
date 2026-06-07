@@ -2,6 +2,7 @@ param(
   [string] $FirefoxPath = $env:MY_YOUTUBE_STYLER_FIREFOX,
   [string] $ProfilePath = $env:MY_YOUTUBE_STYLER_FIREFOX_PROFILE,
   [string] $StartUrl = "https://www.youtube.com/",
+  [switch] $UseTemporaryProfile,
   [switch] $UsePersistentLauncherProfile,
   [switch] $AllowFirefoxProfilePreferenceChanges,
   [switch] $SkipDependencyInstall,
@@ -52,6 +53,100 @@ function Get-LocalWebExtCommand([string] $RepoRoot) {
   return $null
 }
 
+function Read-IniSections([string] $Path) {
+  $sections = @()
+  $current = $null
+
+  foreach ($line in Get-Content -LiteralPath $Path) {
+    $trimmed = $line.Trim()
+
+    if (-not $trimmed -or $trimmed.StartsWith(";") -or $trimmed.StartsWith("#")) {
+      continue
+    }
+
+    if ($trimmed -match '^\[(.+)\]$') {
+      $current = [ordered] @{ Section = $matches[1] }
+      $sections += $current
+      continue
+    }
+
+    if ($current -and $trimmed -match '^([^=]+)=(.*)$') {
+      $current[$matches[1].Trim()] = $matches[2].Trim()
+    }
+  }
+
+  return $sections
+}
+
+function Resolve-FirefoxProfilePath([string] $FirefoxDataRoot, [string] $ProfilePathValue, [bool] $IsRelative) {
+  if (-not $ProfilePathValue) {
+    return $null
+  }
+
+  if ([System.IO.Path]::IsPathRooted($ProfilePathValue) -or -not $IsRelative) {
+    return Get-FullPath $ProfilePathValue
+  }
+
+  return Get-FullPath (Join-Path $FirefoxDataRoot $ProfilePathValue)
+}
+
+function Get-FirefoxDefaultProfilePath {
+  $firefoxDataRoot = Join-Path $env:APPDATA "Mozilla\Firefox"
+  $installsPath = Join-Path $firefoxDataRoot "installs.ini"
+  $profilesPath = Join-Path $firefoxDataRoot "profiles.ini"
+
+  if (Test-Path -LiteralPath $installsPath -PathType Leaf) {
+    foreach ($section in Read-IniSections $installsPath) {
+      if ($section.Contains("Default")) {
+        $candidate = Resolve-FirefoxProfilePath $firefoxDataRoot $section["Default"] $true
+
+        if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Container)) {
+          return $candidate
+        }
+      }
+    }
+  }
+
+  if (-not (Test-Path -LiteralPath $profilesPath -PathType Leaf)) {
+    throw "Could not find Firefox profiles.ini at $profilesPath."
+  }
+
+  $profileSections = @(
+    Read-IniSections $profilesPath |
+      Where-Object { $_.Section -like "Profile*" -and $_.Contains("Path") }
+  )
+
+  foreach ($section in Read-IniSections $profilesPath) {
+    if ($section.Section -like "Install*" -and $section.Contains("Default")) {
+      $candidate = Resolve-FirefoxProfilePath $firefoxDataRoot $section["Default"] $true
+
+      if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Container)) {
+        return $candidate
+      }
+    }
+  }
+
+  $defaultSection = $profileSections | Where-Object { $_.Contains("Default") -and $_["Default"] -eq "1" } | Select-Object -First 1
+  if ($defaultSection) {
+    $candidate = Resolve-FirefoxProfilePath $firefoxDataRoot $defaultSection["Path"] ($defaultSection["IsRelative"] -ne "0")
+
+    if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Container)) {
+      return $candidate
+    }
+  }
+
+  $defaultReleaseSection = $profileSections | Where-Object { $_.Contains("Name") -and $_["Name"] -eq "default-release" } | Select-Object -First 1
+  if ($defaultReleaseSection) {
+    $candidate = Resolve-FirefoxProfilePath $firefoxDataRoot $defaultReleaseSection["Path"] ($defaultReleaseSection["IsRelative"] -ne "0")
+
+    if ($candidate -and (Test-Path -LiteralPath $candidate -PathType Container)) {
+      return $candidate
+    }
+  }
+
+  throw "Could not determine Firefox's default profile from $profilesPath."
+}
+
 function Install-NodeDependencies([string] $RepoRoot) {
   $npm = Get-Command "npm.cmd" -ErrorAction SilentlyContinue
   if (-not $npm) {
@@ -82,20 +177,37 @@ if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
   throw "Could not find extension manifest at $manifestPath."
 }
 
-$useCustomProfile = $UsePersistentLauncherProfile -or [bool] $ProfilePath
+if ($UseTemporaryProfile -and ($UsePersistentLauncherProfile -or $ProfilePath)) {
+  throw "UseTemporaryProfile cannot be combined with UsePersistentLauncherProfile or ProfilePath."
+}
 
-if ($UsePersistentLauncherProfile -and -not $ProfilePath) {
+$useCustomProfile = -not $UseTemporaryProfile
+$shouldCreateProfile = $false
+$profileModeLabel = "Firefox default profile"
+
+if ($ProfilePath) {
+  $profileModeLabel = "custom launcher profile"
+  $shouldCreateProfile = $true
+} elseif ($UsePersistentLauncherProfile) {
+  $profileModeLabel = "dedicated launcher profile"
   $ProfilePath = Join-Path $env:LOCALAPPDATA "MyYouTubeStyler\FirefoxLauncherProfile"
+  $shouldCreateProfile = $true
 }
 
 $profilePathFull = $null
 
 if ($useCustomProfile) {
-  $profilePathFull = Get-FullPath $ProfilePath
+  if ($ProfilePath) {
+    $profilePathFull = Get-FullPath $ProfilePath
+  } else {
+    $profilePathFull = Get-FirefoxDefaultProfilePath
+  }
+
   $defaultProfilesRoot = Get-FullPath (Join-Path $env:APPDATA "Mozilla\Firefox\Profiles")
 
   if (
     $profilePathFull.StartsWith($defaultProfilesRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
+    $profileModeLabel -ne "Firefox default profile" -and
     -not $AllowFirefoxProfilePreferenceChanges
   ) {
     throw @"
@@ -103,12 +215,14 @@ Refusing to run against a normal Firefox profile:
 $profilePathFull
 
 web-ext needs --keep-profile-changes for this launcher profile, and that changes Firefox prefs used for extension debugging.
-Use the default dedicated launcher profile, or pass -AllowFirefoxProfilePreferenceChanges if you really intend this.
+Use the normal default profile, choose a profile outside Firefox's profile directory, or pass -AllowFirefoxProfilePreferenceChanges if you really intend this.
 "@
   }
 
-  if (-not $DryRun -and -not (Test-Path -LiteralPath $profilePathFull -PathType Container)) {
+  if (-not $DryRun -and $shouldCreateProfile -and -not (Test-Path -LiteralPath $profilePathFull -PathType Container)) {
     New-Item -ItemType Directory -Path $profilePathFull -Force | Out-Null
+  } elseif (-not (Test-Path -LiteralPath $profilePathFull -PathType Container)) {
+    throw "Firefox profile directory was not found: $profilePathFull"
   }
 }
 
@@ -139,9 +253,12 @@ $webExtArgs = @(
 if ($useCustomProfile) {
   $webExtArgs += @(
     "--firefox-profile=$profilePathFull",
-    "--profile-create-if-missing",
     "--keep-profile-changes"
   )
+
+  if ($shouldCreateProfile) {
+    $webExtArgs += "--profile-create-if-missing"
+  }
 }
 
 if ($firefoxExecutable) {
@@ -151,9 +268,10 @@ if ($firefoxExecutable) {
 Write-Host "Launching Firefox with My YouTube Styler attached..."
 Write-Host "Extension: $extensionDir"
 if ($useCustomProfile) {
-  Write-Host "Launcher profile: $profilePathFull"
+  Write-Host "Profile mode: $profileModeLabel"
+  Write-Host "Profile: $profilePathFull"
 } else {
-  Write-Host "Launcher profile: web-ext temporary profile"
+  Write-Host "Profile mode: web-ext temporary profile"
 }
 if ($firefoxExecutable) {
   Write-Host "Firefox: $firefoxExecutable"
