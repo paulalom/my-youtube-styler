@@ -36,6 +36,7 @@
     colorVideoMetadata: true,
     openVideoOnThumbnailClick: true,
     hidePlaylists: true,
+    hideMiniplayer: true,
     rememberSeenVideos: false
   };
 
@@ -47,7 +48,8 @@
     hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
     hideFeaturedShelves: "my-youtube-styler-hide-featured",
     openVideoOnThumbnailClick: "my-youtube-styler-open-video-on-thumbnail-click",
-    hidePlaylists: "my-youtube-styler-hide-playlists"
+    hidePlaylists: "my-youtube-styler-hide-playlists",
+    hideMiniplayer: "my-youtube-styler-hide-miniplayer"
   };
 
   const dateFilters = [

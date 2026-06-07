@@ -111,6 +111,12 @@ html.my-youtube-styler-hide-featured .my-youtube-styler-feed-page ytd-rich-secti
   display: none !important;
 }
 
+html.my-youtube-styler-hide-miniplayer ytd-miniplayer {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay,
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay *,
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paid_content" i]:not([href*="/watch" i]),
