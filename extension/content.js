@@ -28,6 +28,8 @@
   const FILTER_CONTROL_INTERACTION_GRACE_MS = 1200;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
+  const NOT_INTERESTED_CLICK_SUPPRESSION_MS = 1500;
+  const NOT_INTERESTED_CLICK_SUPPRESSION_TOLERANCE_PX = 16;
   const isPrivateContext = Boolean(extensionApi?.extension?.inIncognitoContext);
 
   const defaultSettings = {
@@ -93,6 +95,7 @@
   let activeFeedKey = null;
   let chipBarRefreshScheduled = false;
   let filterControlInteractionUntil = 0;
+  let notInterestedClickSuppression = null;
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -1211,9 +1214,14 @@
     followVideoLink(link, event);
   }
 
-  function isNotInterestedClick(event) {
+  function suppressVideoMouseEvent(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+  }
+
+  function isPlainAltPrimaryMouseEvent(event) {
     return (
-      event.type === "click" &&
       event.button === 0 &&
       event.altKey &&
       !event.ctrlKey &&
@@ -1222,33 +1230,96 @@
     );
   }
 
-  function handleNotInterestedVideoClick(event) {
-    if (event.defaultPrevented || !isNotInterestedClick(event)) {
-      return;
-    }
+  function isNotInterestedStartEvent(event) {
+    return (
+      (event.type === "pointerdown" || event.type === "mousedown" || event.type === "click") &&
+      isPlainAltPrimaryMouseEvent(event)
+    );
+  }
 
+  function getNotInterestedVideoMatch(event) {
     const target = getElementTarget(event.target);
     if (isWithinFilterControls(target)) {
-      return;
+      return null;
     }
 
     const card = target?.closest?.("ytd-rich-item-renderer");
 
     if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
-      return;
+      return null;
     }
 
     const videoId = getCardVideoId(card);
 
     if (!videoId) {
+      return null;
+    }
+
+    return { card, videoId };
+  }
+
+  function startNotInterestedClickSuppression(event) {
+    notInterestedClickSuppression = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pointerId: typeof event.pointerId === "number" ? event.pointerId : null,
+      until: Date.now() + NOT_INTERESTED_CLICK_SUPPRESSION_MS
+    };
+  }
+
+  function isSuppressedNotInterestedFollowup(event) {
+    if (!notInterestedClickSuppression || event.button !== 0) {
+      return false;
+    }
+
+    if (Date.now() > notInterestedClickSuppression.until) {
+      notInterestedClickSuppression = null;
+      return false;
+    }
+
+    if (
+      typeof event.pointerId === "number" &&
+      notInterestedClickSuppression.pointerId !== null &&
+      event.pointerId !== notInterestedClickSuppression.pointerId
+    ) {
+      return false;
+    }
+
+    const deltaX = Math.abs(event.clientX - notInterestedClickSuppression.clientX);
+    const deltaY = Math.abs(event.clientY - notInterestedClickSuppression.clientY);
+
+    return (
+      deltaX <= NOT_INTERESTED_CLICK_SUPPRESSION_TOLERANCE_PX &&
+      deltaY <= NOT_INTERESTED_CLICK_SUPPRESSION_TOLERANCE_PX
+    );
+  }
+
+  function markNotInterestedVideo(card, videoId) {
+    card.setAttribute(SEEN_HIDDEN_ATTR, "");
+    recordNotInterestedVideo(videoId);
+  }
+
+  function handleNotInterestedVideoMouseEvent(event) {
+    if (isSuppressedNotInterestedFollowup(event)) {
+      suppressVideoMouseEvent(event);
+      if (event.type === "click") {
+        notInterestedClickSuppression = null;
+      }
       return;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    recordNotInterestedVideo(videoId);
-    card.setAttribute(SEEN_HIDDEN_ATTR, "");
+    if (event.defaultPrevented || !isNotInterestedStartEvent(event)) {
+      return;
+    }
+
+    const match = getNotInterestedVideoMatch(event);
+    if (!match) {
+      return;
+    }
+
+    suppressVideoMouseEvent(event);
+    startNotInterestedClickSuppression(event);
+    markNotInterestedVideo(match.card, match.videoId);
   }
 
   function ensureSeenObserver() {
@@ -1572,7 +1643,11 @@
   observer.observe(document.documentElement, { childList: true, subtree: true });
 
   window.addEventListener("yt-navigate-finish", handleNavigateFinish);
-  window.addEventListener("click", handleNotInterestedVideoClick, true);
+  window.addEventListener("pointerdown", handleNotInterestedVideoMouseEvent, true);
+  window.addEventListener("pointerup", handleNotInterestedVideoMouseEvent, true);
+  window.addEventListener("mousedown", handleNotInterestedVideoMouseEvent, true);
+  window.addEventListener("mouseup", handleNotInterestedVideoMouseEvent, true);
+  window.addEventListener("click", handleNotInterestedVideoMouseEvent, true);
   window.addEventListener("click", handleThumbnailVideoClick, true);
   window.addEventListener("auxclick", handleThumbnailVideoClick, true);
   window.addEventListener("popstate", scheduleApply);
