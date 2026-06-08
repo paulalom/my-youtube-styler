@@ -175,7 +175,6 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 .my-youtube-styler-feed-page .my-youtube-styler-filter-renderer {
   min-width: 0 !important;
   width: 100% !important;
-  z-index: 1000 !important;
 }
 
 .my-youtube-styler-feed-page .my-youtube-styler-filter-row {
@@ -186,10 +185,8 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   flex-flow: row wrap !important;
   justify-content: flex-start !important;
   min-width: 0 !important;
-  position: relative !important;
   row-gap: 0 !important;
   width: 100% !important;
-  z-index: 1000 !important;
 }
 
 .my-youtube-styler-chip-area,
@@ -214,9 +211,7 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   justify-content: flex-start;
   max-width: calc(50% - 6px);
   order: 2;
-  position: relative;
   width: auto;
-  z-index: 1001;
 }
 
 .my-youtube-styler-feed-page .my-youtube-styler-filter-row > #selected-chip-content {
