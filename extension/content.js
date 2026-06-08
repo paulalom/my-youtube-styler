@@ -1215,10 +1215,10 @@
     return (
       event.type === "click" &&
       event.button === 0 &&
-      event.ctrlKey &&
+      event.altKey &&
+      !event.ctrlKey &&
       !event.metaKey &&
-      !event.shiftKey &&
-      !event.altKey
+      !event.shiftKey
     );
   }
 

@@ -12,7 +12,7 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Adds date filters for videos newer than 7 days, 1 month, 1 year, or 5 years.
 - Adds minimum and maximum view-count filters from 1K through 1B views.
 - Optionally auto-remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
-- Lets you Ctrl+click a Home or Subscriptions feed video to add it to a local not interested list and hide it until that list is cleared.
+- Lets you Alt+click a Home or Subscriptions feed video to add it to a local not interested list and hide it until that list is cleared.
 - Routes thumbnail-overlay clicks, including paid-promotion overlays, to the video page.
 - Hides Shorts, topic shelves, YouTube featured shelves, playlists, YouTube's bottom-right miniplayer, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
@@ -110,7 +110,7 @@ You can also create an unsigned local package for inspection with `npm run build
 - Settings are stored in Firefox extension storage.
 - Selected inline date/view filters are stored only in the YouTube tab session.
 - Auto seen-video history is opt-in. When enabled, it stores video IDs with last-seen timestamps, prunes entries older than 7 days, and is never uploaded anywhere.
-- Local not interested videos are stored separately when you Ctrl+click a feed video, remain hidden until you clear that list, and are never uploaded anywhere.
+- Local not interested videos are stored separately when you Alt+click a feed video, remain hidden until you clear that list, and are never uploaded anywhere.
 - The local not interested list does not use YouTube's own Not interested action or send feedback to YouTube.
 - Seen-video history is disabled in private browsing windows, even when the setting is enabled.
 

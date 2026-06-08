@@ -202,7 +202,7 @@ async function updateSeenHistoryStatuses() {
   if (notInterestedStatus) {
     notInterestedStatus.textContent =
       notInterestedCount === 0
-        ? "Ctrl+click a feed video to hide it locally; no feedback is sent to YouTube."
+        ? "Alt+click a feed video to hide it locally; no feedback is sent to YouTube."
         : `${notInterestedCount} hidden locally. This does not send feedback to YouTube.`;
   }
 }
