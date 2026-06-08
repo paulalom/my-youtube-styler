@@ -4,6 +4,13 @@
   const CHIP_AREA_ID = "my-youtube-styler-chip-area";
   const FILTER_AREA_ID = "my-youtube-styler-filter-area";
   const SUBSCRIPTIONS_FILTER_ANCHOR_ID = "my-youtube-styler-subscriptions-filter-anchor";
+  const VIDEO_CARD_SELECTORS = [
+    "ytd-rich-item-renderer",
+    "ytd-grid-video-renderer",
+    "ytd-video-renderer",
+    "yt-lockup-view-model"
+  ];
+  const VIDEO_CARD_SELECTOR = VIDEO_CARD_SELECTORS.join(", ");
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
@@ -28,6 +35,7 @@
   const FILTER_CONTROL_INTERACTION_GRACE_MS = 1200;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
+  const ALT_KEY_STATE_TIMEOUT_MS = 8000;
   const NOT_INTERESTED_CLICK_SUPPRESSION_MS = 1500;
   const NOT_INTERESTED_CLICK_SUPPRESSION_TOLERANCE_PX = 16;
   const isPrivateContext = Boolean(extensionApi?.extension?.inIncognitoContext);
@@ -96,6 +104,7 @@
   let chipBarRefreshScheduled = false;
   let filterControlInteractionUntil = 0;
   let notInterestedClickSuppression = null;
+  let plainAltKeyDownUntil = 0;
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -315,7 +324,7 @@
       return videoIds;
     }
 
-    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
       const videoId = getCardVideoId(card);
 
       if (videoId) {
@@ -328,6 +337,10 @@
 
   function applySettingsClasses() {
     const root = document.documentElement;
+
+    if (!root) {
+      return;
+    }
 
     for (const [key, className] of Object.entries(settingClasses)) {
       root.classList.toggle(className, Boolean(settings[key]));
@@ -1061,8 +1074,23 @@
     return card.querySelector('a[href*="/watch"][href*="v="]');
   }
 
-  function getCardVideoId(card) {
-    const link = getCardVideoLink(card);
+  function getVideoLinkTarget(target) {
+    return target?.closest?.('a[href*="/watch"][href*="v="]') || null;
+  }
+
+  function getVideoCardTarget(target, link) {
+    for (const selector of VIDEO_CARD_SELECTORS) {
+      const card = target?.closest?.(selector) || link?.closest?.(selector);
+
+      if (card) {
+        return card;
+      }
+    }
+
+    return null;
+  }
+
+  function getVideoIdFromLink(link) {
     if (!link) {
       return null;
     }
@@ -1072,6 +1100,10 @@
     } catch {
       return null;
     }
+  }
+
+  function getCardVideoId(card) {
+    return getVideoIdFromLink(getCardVideoLink(card));
   }
 
   function getCardThumbnailTarget(card) {
@@ -1223,7 +1255,7 @@
   function isPlainAltPrimaryMouseEvent(event) {
     return (
       event.button === 0 &&
-      event.altKey &&
+      (event.altKey || Date.now() < plainAltKeyDownUntil) &&
       !event.ctrlKey &&
       !event.metaKey &&
       !event.shiftKey
@@ -1243,13 +1275,19 @@
       return null;
     }
 
-    const card = target?.closest?.("ytd-rich-item-renderer");
-
-    if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
+    const feedPage = getFeedPage();
+    if (!feedPage) {
       return null;
     }
 
-    const videoId = getCardVideoId(card);
+    const link = getVideoLinkTarget(target);
+    const card = getVideoCardTarget(target, link);
+
+    if (!card || !feedPage.contains(card)) {
+      return null;
+    }
+
+    const videoId = getCardVideoId(card) || getVideoIdFromLink(link);
 
     if (!videoId) {
       return null;
@@ -1320,6 +1358,27 @@
     suppressVideoMouseEvent(event);
     startNotInterestedClickSuppression(event);
     markNotInterestedVideo(match.card, match.videoId);
+  }
+
+  function handleAltKeyDown(event) {
+    if (event.key !== "Alt") {
+      return;
+    }
+
+    plainAltKeyDownUntil =
+      !event.ctrlKey && !event.metaKey && !event.shiftKey
+        ? Date.now() + ALT_KEY_STATE_TIMEOUT_MS
+        : 0;
+  }
+
+  function handleAltKeyUp(event) {
+    if (event.key === "Alt") {
+      resetAltKeyState();
+    }
+  }
+
+  function resetAltKeyState() {
+    plainAltKeyDownUntil = 0;
   }
 
   function ensureSeenObserver() {
@@ -1525,7 +1584,7 @@
     if (isPrivateContext) {
       disconnectSeenObserver();
 
-      for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+      for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
         card.removeAttribute(SEEN_HIDDEN_ATTR);
       }
 
@@ -1538,7 +1597,7 @@
       disconnectSeenObserver();
     }
 
-    for (const card of feedPage.querySelectorAll("ytd-rich-item-renderer")) {
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
       const videoId = getCardVideoId(card);
 
       if (!videoId) {
@@ -1633,6 +1692,29 @@
     flushSeenHistory();
   }
 
+  function addCapturedEventListener(target, eventName, listener) {
+    target.addEventListener(eventName, listener, true);
+  }
+
+  function addNotInterestedEventListeners(target) {
+    for (const eventName of ["pointerdown", "pointerup", "mousedown", "mouseup", "click"]) {
+      addCapturedEventListener(target, eventName, handleNotInterestedVideoMouseEvent);
+    }
+  }
+
+  function observeDocumentChanges(observer) {
+    if (document.documentElement) {
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+      return;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      if (document.documentElement) {
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      }
+    }, { once: true });
+  }
+
   applySettingsClasses();
   watchSettings();
   loadSettings();
@@ -1640,19 +1722,21 @@
   loadNotInterestedHistory();
 
   const observer = new MutationObserver(scheduleApply);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  observeDocumentChanges(observer);
 
-  window.addEventListener("yt-navigate-finish", handleNavigateFinish);
-  window.addEventListener("pointerdown", handleNotInterestedVideoMouseEvent, true);
-  window.addEventListener("pointerup", handleNotInterestedVideoMouseEvent, true);
-  window.addEventListener("mousedown", handleNotInterestedVideoMouseEvent, true);
-  window.addEventListener("mouseup", handleNotInterestedVideoMouseEvent, true);
-  window.addEventListener("click", handleNotInterestedVideoMouseEvent, true);
-  window.addEventListener("click", handleThumbnailVideoClick, true);
-  window.addEventListener("auxclick", handleThumbnailVideoClick, true);
-  window.addEventListener("popstate", scheduleApply);
-  window.addEventListener("pageshow", scheduleApply);
-  window.addEventListener("pagehide", handlePageHide);
+  addCapturedEventListener(window, "yt-navigate-finish", handleNavigateFinish);
+  addCapturedEventListener(window, "keydown", handleAltKeyDown);
+  addCapturedEventListener(window, "keyup", handleAltKeyUp);
+  addCapturedEventListener(window, "blur", resetAltKeyState);
+  addCapturedEventListener(document, "keyup", handleAltKeyUp);
+  addCapturedEventListener(document, "visibilitychange", resetAltKeyState);
+  addNotInterestedEventListeners(window);
+  addNotInterestedEventListeners(document);
+  addCapturedEventListener(window, "click", handleThumbnailVideoClick);
+  addCapturedEventListener(window, "auxclick", handleThumbnailVideoClick);
+  addCapturedEventListener(window, "popstate", scheduleApply);
+  addCapturedEventListener(window, "pageshow", scheduleApply);
+  addCapturedEventListener(window, "pagehide", handlePageHide);
 
   scheduleApply();
 })();

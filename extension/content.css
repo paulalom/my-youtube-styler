@@ -168,6 +168,7 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
 .my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-paid-hidden],
 .my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-date-hidden],
 .my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-view-hidden],
+.my-youtube-styler-feed-page [data-my-youtube-styler-seen-hidden],
 .my-youtube-styler-feed-page ytd-rich-item-renderer[data-my-youtube-styler-seen-hidden] {
   display: none !important;
 }
