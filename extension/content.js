@@ -25,6 +25,7 @@
   const AGE_TONE_MAX_MS = 31 * DAY;
   const TONE_HUE_RED = 4;
   const TONE_HUE_GREEN = 132;
+  const FILTER_CONTROL_INTERACTION_GRACE_MS = 1200;
   const SEEN_HISTORY_MAX_AGE_MS = 7 * DAY;
   const SEEN_HISTORY_WRITE_DELAY_MS = 1500;
   const isPrivateContext = Boolean(extensionApi?.extension?.inIncognitoContext);
@@ -91,6 +92,7 @@
   let observedSeenCards = new WeakMap();
   let activeFeedKey = null;
   let chipBarRefreshScheduled = false;
+  let filterControlInteractionUntil = 0;
   let scheduled = false;
 
   function readStoredChoice(storageKey, choices, fallback) {
@@ -427,6 +429,14 @@
       controls = null;
     }
 
+    if (controls) {
+      ensureFilterControlEventProtection(controls);
+
+      if (controls.isConnected && isFilterControlInteractionActive()) {
+        return;
+      }
+    }
+
     if (!filterRowTarget && !shouldUseSubscriptionsAnchor) {
       if (controls) {
         updateControlState(controls);
@@ -446,6 +456,8 @@
       controls.appendChild(createViewSelectGroup("Min views", "min"));
       controls.appendChild(createViewSelectGroup("Max views", "max"));
     }
+
+    ensureFilterControlEventProtection(controls);
 
     if (shouldUseSubscriptionsAnchor) {
       const subscriptionsAnchor = ensureSubscriptionsFilterAnchor(feedPage);
@@ -572,6 +584,58 @@
     }
 
     return { chipArea, filterArea };
+  }
+
+  function getElementTarget(target) {
+    return target instanceof Element ? target : target?.parentElement;
+  }
+
+  function isWithinFilterControls(element) {
+    return Boolean(element?.closest?.(`#${FILTER_ID}`));
+  }
+
+  function noteFilterControlInteraction() {
+    filterControlInteractionUntil = Date.now() + FILTER_CONTROL_INTERACTION_GRACE_MS;
+  }
+
+  function isFilterControlInteractionActive() {
+    const activeElement = document.activeElement;
+
+    return (
+      (activeElement instanceof Element && isWithinFilterControls(activeElement)) ||
+      Date.now() < filterControlInteractionUntil
+    );
+  }
+
+  function ensureFilterControlEventProtection(controls) {
+    if (controls.dataset.myYoutubeStylerEventsBound) {
+      return;
+    }
+
+    controls.dataset.myYoutubeStylerEventsBound = "true";
+
+    const protectControlEvent = (event) => {
+      noteFilterControlInteraction();
+      event.stopPropagation();
+    };
+
+    for (const eventName of [
+      "pointerdown",
+      "pointerup",
+      "mousedown",
+      "mouseup",
+      "click",
+      "auxclick",
+      "keydown",
+      "keyup",
+      "input",
+      "change"
+    ]) {
+      controls.addEventListener(eventName, protectControlEvent);
+    }
+
+    controls.addEventListener("focusin", noteFilterControlInteraction);
+    controls.addEventListener("focusout", noteFilterControlInteraction);
   }
 
   function scheduleChipBarRefresh() {
@@ -1122,7 +1186,11 @@
       return;
     }
 
-    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const target = getElementTarget(event.target);
+    if (isWithinFilterControls(target)) {
+      return;
+    }
+
     const card = target?.closest?.("ytd-rich-item-renderer");
 
     if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
@@ -1159,7 +1227,11 @@
       return;
     }
 
-    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const target = getElementTarget(event.target);
+    if (isWithinFilterControls(target)) {
+      return;
+    }
+
     const card = target?.closest?.("ytd-rich-item-renderer");
 
     if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
