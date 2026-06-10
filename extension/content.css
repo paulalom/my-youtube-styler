@@ -67,6 +67,10 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
   color: inherit !important;
 }
 
+html.my-youtube-styler-emphasize-dates .my-youtube-styler-feed-page [data-my-youtube-styler-emphasized-date] {
+  font-weight: 700 !important;
+}
+
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) {
   align-items: center !important;
   display: flex !important;

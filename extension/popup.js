@@ -13,6 +13,7 @@ const defaultSettings = {
   hideExploreMoreTopics: true,
   hideFeaturedShelves: true,
   colorVideoMetadata: true,
+  emphasizeDates: true,
   openVideoOnThumbnailClick: true,
   hidePlaylists: true,
   hidePlayables: true,

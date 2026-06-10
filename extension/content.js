@@ -26,6 +26,7 @@
   const RESET_FILTERS_STORAGE_KEY = "myYouTubeStylerResetFiltersAt";
   const VIEW_TONE_ATTR = "data-my-youtube-styler-view-tone";
   const AGE_TONE_ATTR = "data-my-youtube-styler-age-tone";
+  const DATE_EMPHASIS_ATTR = "data-my-youtube-styler-emphasized-date";
   const DAY = 24 * 60 * 60 * 1000;
   const VIEW_TONE_MIN = 1_000;
   const VIEW_TONE_MAX = 1_000_000;
@@ -49,6 +50,7 @@
     hideExploreMoreTopics: true,
     hideFeaturedShelves: true,
     colorVideoMetadata: true,
+    emphasizeDates: true,
     openVideoOnThumbnailClick: true,
     hidePlaylists: true,
     hidePlayables: true,
@@ -64,6 +66,7 @@
     hideYouMightLike: "my-youtube-styler-hide-you-might-like",
     hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
     hideFeaturedShelves: "my-youtube-styler-hide-featured",
+    emphasizeDates: "my-youtube-styler-emphasize-dates",
     openVideoOnThumbnailClick: "my-youtube-styler-open-video-on-thumbnail-click",
     hidePlaylists: "my-youtube-styler-hide-playlists",
     hidePlayables: "my-youtube-styler-hide-playables",
@@ -128,6 +131,8 @@
   let notInterestedClickSuppression = null;
   let plainAltKeyDownUntil = 0;
   let scheduled = false;
+  const expandedDateTextOriginals = new WeakMap();
+  const expandedDateTextNodes = new Set();
 
   function readStoredChoice(storageKey, choices, fallback) {
     try {
@@ -1157,6 +1162,148 @@
     }
   }
 
+  function expandDateText(text) {
+    let shouldBold = false;
+    const expandedText = text.replace(
+      /\b(\d+(?:\.\d+)?)\s*(day|d|month|mo|year|yr|y)s?\s+ago\b/gi,
+      (match, amount, rawUnit) => {
+        const unit = rawUnit.toLowerCase();
+        const canonicalUnit = {
+          d: "day",
+          day: "day",
+          mo: "month",
+          month: "month",
+          y: "year",
+          yr: "year",
+          year: "year"
+        }[unit];
+
+        if (!canonicalUnit) {
+          return match;
+        }
+
+        if (canonicalUnit === "month" || canonicalUnit === "year") {
+          shouldBold = true;
+        }
+
+        const parsedAmount = Number.parseFloat(amount);
+        const suffix = parsedAmount === 1 ? "" : "s";
+        return `${amount} ${canonicalUnit}${suffix} ago`;
+      }
+    );
+
+    if (expandedText === text && !shouldBold) {
+      return null;
+    }
+
+    return { text: expandedText, shouldBold };
+  }
+
+  function getTextNodeExpansionSource(textNode) {
+    const currentText = textNode.nodeValue || "";
+    const originalText = expandedDateTextOriginals.get(textNode);
+
+    if (!originalText) {
+      return currentText;
+    }
+
+    const originalExpansion = expandDateText(originalText);
+
+    if (originalExpansion?.text === currentText) {
+      return originalText;
+    }
+
+    expandedDateTextOriginals.delete(textNode);
+    expandedDateTextNodes.delete(textNode);
+    return currentText;
+  }
+
+  function applyDateTextExpansion(element) {
+    let shouldBold = false;
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+
+    for (let textNode = walker.nextNode(); textNode; textNode = walker.nextNode()) {
+      const sourceText = getTextNodeExpansionSource(textNode);
+      const expansion = expandDateText(sourceText);
+
+      if (!expansion) {
+        continue;
+      }
+
+      shouldBold ||= expansion.shouldBold;
+
+      if (expansion.text !== sourceText) {
+        expandedDateTextOriginals.set(textNode, sourceText);
+        expandedDateTextNodes.add(textNode);
+
+        if (textNode.nodeValue !== expansion.text) {
+          textNode.nodeValue = expansion.text;
+        }
+      }
+    }
+
+    return shouldBold;
+  }
+
+  function restoreExpandedDateTextNodes(scope) {
+    for (const textNode of expandedDateTextNodes) {
+      const parent = textNode.parentElement;
+
+      if (!parent) {
+        expandedDateTextOriginals.delete(textNode);
+        expandedDateTextNodes.delete(textNode);
+        continue;
+      }
+
+      if (scope && !scope.contains(parent)) {
+        continue;
+      }
+
+      const originalText = expandedDateTextOriginals.get(textNode);
+
+      if (originalText !== undefined && textNode.nodeValue !== originalText) {
+        textNode.nodeValue = originalText;
+      }
+
+      expandedDateTextOriginals.delete(textNode);
+      expandedDateTextNodes.delete(textNode);
+    }
+  }
+
+  function clearDateEmphasis(feedPage) {
+    for (const element of feedPage.querySelectorAll(`[${DATE_EMPHASIS_ATTR}]`)) {
+      element.removeAttribute(DATE_EMPHASIS_ATTR);
+    }
+
+    restoreExpandedDateTextNodes(feedPage);
+  }
+
+  function applyDateEmphasis(feedPage) {
+    if (!settings.emphasizeDates) {
+      clearDateEmphasis(feedPage);
+      return;
+    }
+
+    const emphasizedElements = new Set();
+
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+      for (const element of getCardStylableMetadataCandidates(card)) {
+        if (applyDateTextExpansion(element)) {
+          emphasizedElements.add(element);
+          element.setAttribute(DATE_EMPHASIS_ATTR, "");
+        } else {
+          element.removeAttribute(DATE_EMPHASIS_ATTR);
+        }
+      }
+    }
+
+    for (const element of feedPage.querySelectorAll(`[${DATE_EMPHASIS_ATTR}]`)) {
+      if (!emphasizedElements.has(element)) {
+        element.removeAttribute(DATE_EMPHASIS_ATTR);
+      }
+    }
+  }
+
   function getCardVideoLink(card) {
     return card.querySelector('a[href*="/watch"][href*="v="]');
   }
@@ -1748,6 +1895,7 @@
     ensureFilterControls(feedPage);
     applySubscriptionSortControlFilter(feedPage);
     applyMetadataColoring(feedPage);
+    applyDateEmphasis(feedPage);
     applyPaidVideoFilter(feedPage);
     applyDateFilter(feedPage);
     applyViewFilter(feedPage);
