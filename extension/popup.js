@@ -17,7 +17,7 @@ const defaultSettings = {
   openVideoOnThumbnailClick: true,
   hidePlaylists: true,
   hidePlayables: true,
-  hideSubscriptionSortControls: true,
+  hideSubscriptionLatestSections: true,
   hideMiniplayer: true,
   rememberSeenVideos: false
 };

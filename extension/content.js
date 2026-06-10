@@ -15,7 +15,7 @@
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
-  const SUBSCRIPTION_SORT_HIDDEN_ATTR = "data-my-youtube-styler-subscription-sort-hidden";
+  const SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR = "data-my-youtube-styler-subscription-latest-section-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
@@ -54,7 +54,7 @@
     openVideoOnThumbnailClick: true,
     hidePlaylists: true,
     hidePlayables: true,
-    hideSubscriptionSortControls: true,
+    hideSubscriptionLatestSections: true,
     hideMiniplayer: true,
     rememberSeenVideos: false
   };
@@ -91,23 +91,26 @@
     { key: "100m", label: "100M", value: 100_000_000 },
     { key: "1b", label: "1B", value: 1_000_000_000 }
   ];
-  const subscriptionSortControlLabels = new Set(["latest", "most relevant"]);
-  const subscriptionSortControlRootSelector = [
-    "yt-chip-cloud-chip-renderer",
-    "ytd-chip-cloud-chip-renderer",
-    "chip-cloud-chip-view-model",
-    "yt-chip-shape",
-    ".ytChipShapeHost",
-    ".yt-chip-shape-wiz",
-    "ytd-button-renderer",
-    "ytd-toggle-button-renderer"
+  const subscriptionLatestSectionLabels = new Set(["latest", "most relevant"]);
+  const subscriptionLatestSectionHeadingSelector = [
+    "h1",
+    "h2",
+    "h3",
+    '[role="heading"]',
+    "#title",
+    "#title-text",
+    ".title",
+    ".ytShelfHeaderLayoutTitle",
+    ".yt-shelf-header-layout-wiz__title",
+    "yt-formatted-string#title",
+    "yt-attributed-string"
   ].join(", ");
-  const subscriptionSortControlSelector = [
-    subscriptionSortControlRootSelector,
-    "button",
-    "a",
-    '[role="button"]',
-    '[role="tab"]'
+  const subscriptionLatestSectionRootSelector = [
+    "ytd-rich-section-renderer",
+    "ytd-rich-shelf-renderer",
+    "ytd-shelf-renderer",
+    "ytd-item-section-renderer",
+    "ytd-expanded-shelf-contents-renderer"
   ].join(", ");
 
   let settings = { ...defaultSettings };
@@ -446,7 +449,7 @@
     return style.display !== "none" && style.visibility !== "hidden";
   }
 
-  function normalizeSubscriptionSortControlLabel(value) {
+  function normalizeSubscriptionLatestSectionLabel(value) {
     return String(value || "")
       .replace(/\bselected\b/gi, "")
       .replace(/\s+/g, " ")
@@ -455,58 +458,65 @@
       .toLowerCase();
   }
 
-  function isSubscriptionSortControl(element) {
+  function isSubscriptionLatestSectionHeading(element) {
+    if (element.closest(`#${FILTER_ID}`) || element.closest(VIDEO_CARD_SELECTOR)) {
+      return false;
+    }
+
     return [
       element.getAttribute("aria-label"),
       element.getAttribute("title"),
       element.textContent
-    ].some((value) => subscriptionSortControlLabels.has(normalizeSubscriptionSortControlLabel(value)));
+    ].some((value) => subscriptionLatestSectionLabels.has(normalizeSubscriptionLatestSectionLabel(value)));
   }
 
-  function getSubscriptionSortControlRoot(element) {
-    const root = element.closest(subscriptionSortControlRootSelector) || element;
+  function getSubscriptionLatestSectionRoot(element, feedPage) {
+    const sectionRoot = element.closest(subscriptionLatestSectionRootSelector);
 
     if (
-      root.closest(`#${FILTER_ID}`) ||
-      root.closest(VIDEO_CARD_SELECTOR)
+      sectionRoot &&
+      sectionRoot !== feedPage &&
+      feedPage.contains(sectionRoot) &&
+      !sectionRoot.closest(VIDEO_CARD_SELECTOR)
     ) {
-      return null;
+      return sectionRoot;
     }
 
-    return root;
+    const headingRoot = element.closest('h1, h2, h3, [role="heading"]') || element;
+    return headingRoot !== feedPage ? headingRoot : null;
   }
 
-  function clearSubscriptionSortControlFilter(feedPage) {
-    for (const control of feedPage.querySelectorAll(`[${SUBSCRIPTION_SORT_HIDDEN_ATTR}]`)) {
-      control.removeAttribute(SUBSCRIPTION_SORT_HIDDEN_ATTR);
+  function clearSubscriptionLatestSectionFilter(feedPage) {
+    for (const section of feedPage.querySelectorAll(`[${SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR}]`)) {
+      section.removeAttribute(SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR);
     }
   }
 
-  function applySubscriptionSortControlFilter(feedPage) {
-    if (!settings.hideSubscriptionSortControls || !isSubscriptionsFeedPath()) {
-      clearSubscriptionSortControlFilter(feedPage);
+  function applySubscriptionLatestSectionFilter(feedPage) {
+    if (!settings.hideSubscriptionLatestSections || !isSubscriptionsFeedPath()) {
+      clearSubscriptionLatestSectionFilter(feedPage);
       return;
     }
 
-    const hiddenControls = new Set();
+    const hiddenSections = new Set();
 
-    for (const element of feedPage.querySelectorAll(subscriptionSortControlSelector)) {
-      if (!isSubscriptionSortControl(element)) {
+    for (const element of feedPage.querySelectorAll(subscriptionLatestSectionHeadingSelector)) {
+      if (!isSubscriptionLatestSectionHeading(element)) {
         continue;
       }
 
-      const control = getSubscriptionSortControlRoot(element);
-      if (!control) {
+      const section = getSubscriptionLatestSectionRoot(element, feedPage);
+      if (!section) {
         continue;
       }
 
-      control.setAttribute(SUBSCRIPTION_SORT_HIDDEN_ATTR, "");
-      hiddenControls.add(control);
+      section.setAttribute(SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR, "");
+      hiddenSections.add(section);
     }
 
-    for (const control of feedPage.querySelectorAll(`[${SUBSCRIPTION_SORT_HIDDEN_ATTR}]`)) {
-      if (!hiddenControls.has(control)) {
-        control.removeAttribute(SUBSCRIPTION_SORT_HIDDEN_ATTR);
+    for (const section of feedPage.querySelectorAll(`[${SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR}]`)) {
+      if (!hiddenSections.has(section)) {
+        section.removeAttribute(SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR);
       }
     }
   }
@@ -1893,7 +1903,7 @@
     }
 
     ensureFilterControls(feedPage);
-    applySubscriptionSortControlFilter(feedPage);
+    applySubscriptionLatestSectionFilter(feedPage);
     applyMetadataColoring(feedPage);
     applyDateEmphasis(feedPage);
     applyPaidVideoFilter(feedPage);
