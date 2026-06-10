@@ -151,6 +151,19 @@ html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-sect
   display: none !important;
 }
 
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-game-card-renderer),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(yt-game-card-view-model),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/playables"]),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="/playables"]),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-game-card-renderer),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has(yt-game-card-view-model),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href^="/playables"]),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href*="/playables"]),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has([aria-label*="Playables" i]),
+html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-section-renderer:has([title*="Playables" i]) {
+  display: none !important;
+}
+
 html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.badge-style-type-members-only),
 html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.yt-badge-shape--type-members-only),
 html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-renderer:has(.yt-badge-shape--membership),

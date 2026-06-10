@@ -15,6 +15,7 @@ const defaultSettings = {
   colorVideoMetadata: true,
   openVideoOnThumbnailClick: true,
   hidePlaylists: true,
+  hidePlayables: true,
   hideMiniplayer: true,
   rememberSeenVideos: false
 };

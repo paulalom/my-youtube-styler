@@ -50,6 +50,7 @@
     colorVideoMetadata: true,
     openVideoOnThumbnailClick: true,
     hidePlaylists: true,
+    hidePlayables: true,
     hideMiniplayer: true,
     rememberSeenVideos: false
   };
@@ -63,6 +64,7 @@
     hideFeaturedShelves: "my-youtube-styler-hide-featured",
     openVideoOnThumbnailClick: "my-youtube-styler-open-video-on-thumbnail-click",
     hidePlaylists: "my-youtube-styler-hide-playlists",
+    hidePlayables: "my-youtube-styler-hide-playables",
     hideMiniplayer: "my-youtube-styler-hide-miniplayer"
   };
 
