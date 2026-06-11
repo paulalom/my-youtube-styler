@@ -1175,12 +1175,23 @@
   function expandDateText(text) {
     let shouldBold = false;
     const expandedText = text.replace(
-      /\b(\d+(?:\.\d+)?)\s*(day|d|month|mo|year|yr|y)s?\s+ago\b/gi,
+      /\b(\d+(?:\.\d+)?)\s*(second|sec|s|minute|min|hour|hr|h|day|d|week|wk|w|month|mo|year|yr|y)s?\s+ago\b/gi,
       (match, amount, rawUnit) => {
         const unit = rawUnit.toLowerCase();
         const canonicalUnit = {
+          s: "second",
+          sec: "second",
+          second: "second",
+          min: "minute",
+          minute: "minute",
+          h: "hour",
+          hr: "hour",
+          hour: "hour",
           d: "day",
           day: "day",
+          w: "week",
+          wk: "week",
+          week: "week",
           mo: "month",
           month: "month",
           y: "year",
@@ -1192,7 +1203,7 @@
           return match;
         }
 
-        if (canonicalUnit === "month" || canonicalUnit === "year") {
+        if (canonicalUnit === "week" || canonicalUnit === "month" || canonicalUnit === "year") {
           shouldBold = true;
         }
 
