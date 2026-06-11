@@ -100,9 +100,11 @@ New-Item -ItemType Directory -Path signed-releases/firefox -Force
 Copy-Item web-ext-artifacts/*.xpi signed-releases/firefox/
 ```
 
+For automatic self-hosted updates, Firefox reads `updates/firefox.json` from the raw GitHub URL in `extension/manifest.json`. Before signing a release, update that JSON file to the new version and GitHub release asset URL. After signing, upload the signed `.xpi` to the matching GitHub release using the exact filename from `update_link`.
+
 The signed Firefox v0.7.2 XPI was saved locally at `signed-releases/firefox/d286352590454dc89781-0.7.2.xpi`.
 
-For each update, bump `extension/manifest.json`'s `version`, rerun the signing command, install the new signed `.xpi`, and preserve a copy in `signed-releases/firefox/` if desired.
+For each update, bump `extension/manifest.json`'s `version`, update `updates/firefox.json`, rerun the signing command, install the new signed `.xpi`, and preserve a copy in `signed-releases/firefox/` if desired. When using AMO Developer Hub manually, upload updates from the existing add-on's version page; using the new add-on flow with the same Gecko ID produces a duplicate add-on ID error.
 
 If signing fails with `Unauthorized` and `Error decoding signature`, regenerate or recopy the AMO JWT issuer and JWT secret as a matching pair, then rerun the signing command.
 

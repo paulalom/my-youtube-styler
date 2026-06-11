@@ -21,6 +21,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "my-youtube-styler@local",
+      "update_url": "https://raw.githubusercontent.com/paulalom/my-youtube-styler/main/updates/firefox.json",
       "data_collection_permissions": {
         "required": ["none"]
       }

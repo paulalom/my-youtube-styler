@@ -4,7 +4,7 @@
   "private": true,
   "description": "Local YouTube feed styling and filtering tweaks.",
   "scripts": {
-    "lint": "web-ext lint --source-dir extension",
+    "lint": "web-ext lint --source-dir extension --self-hosted",
     "build": "web-ext build --source-dir extension --artifacts-dir web-ext-artifacts --overwrite-dest",
     "sign:firefox:unlisted": "web-ext sign --source-dir extension --artifacts-dir web-ext-artifacts --channel unlisted"
   },
