@@ -11,6 +11,32 @@
     "yt-lockup-view-model"
   ];
   const VIDEO_CARD_SELECTOR = VIDEO_CARD_SELECTORS.join(", ");
+  const PAID_PROMOTION_DISCLOSURE_SELECTORS = [
+    ".ytp-paid-content-overlay",
+    ".ytm-paid-content-overlay-renderer",
+    ".YtmPaidContentOverlayHost",
+    "yt-paid-content-overlay-renderer",
+    "yt-paid-content-overlay-view-model",
+    "ytm-paid-content-overlay-renderer",
+    '[class*="paid-content-overlay" i]',
+    '[class*="paidcontentoverlay" i]',
+    '[class*="paid-promotion" i]',
+    '[class*="paidpromotion" i]',
+    'a[href*="paid_content" i]:not([href*="/watch" i])',
+    'a[href*="paidcontent" i]:not([href*="/watch" i])',
+    'a[href*="support.google.com/youtube" i][href*="p=ppp" i]',
+    'a[href*="support.google.com/youtube/answer/10588440" i]',
+    'a[href*="support.google.com/youtube/answer/154235" i]',
+    'a:not([href*="/watch" i]):has([aria-label*="Includes paid promotion" i])',
+    'a:not([href*="/watch" i]):has([title*="Includes paid promotion" i])',
+    'button:has([aria-label*="Includes paid promotion" i])',
+    'button:has([title*="Includes paid promotion" i])',
+    '[role="button"]:has([aria-label*="Includes paid promotion" i])',
+    '[role="button"]:has([title*="Includes paid promotion" i])',
+    '[aria-label*="Includes paid promotion" i]',
+    '[title*="Includes paid promotion" i]'
+  ];
+  const PAID_PROMOTION_DISCLOSURE_SELECTOR = PAID_PROMOTION_DISCLOSURE_SELECTORS.join(", ");
   const DATE_HIDDEN_ATTR = "data-my-youtube-styler-date-hidden";
   const VIEW_HIDDEN_ATTR = "data-my-youtube-styler-view-hidden";
   const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
@@ -1380,28 +1406,35 @@
 
     try {
       const url = new URL(href, location.origin);
+      const pathAndSearch = `${url.pathname} ${url.search}`.toLowerCase();
+
       return (
         url.hostname === "support.google.com" &&
         url.pathname.startsWith("/youtube") &&
-        (url.pathname.includes("/answer/10588440") || url.searchParams.get("p") === "ppp")
+        (
+          url.pathname.includes("/answer/10588440") ||
+          url.pathname.includes("/answer/154235") ||
+          url.searchParams.get("p") === "ppp" ||
+          (pathAndSearch.includes("paid") && pathAndSearch.includes("promotion"))
+        )
       );
     } catch {
-      return href.includes("support.google.com/youtube") && href.includes("p=ppp");
+      const normalizedHref = href.toLowerCase();
+
+      return (
+        normalizedHref.includes("support.google.com/youtube") &&
+        (
+          normalizedHref.includes("p=ppp") ||
+          normalizedHref.includes("/answer/10588440") ||
+          normalizedHref.includes("/answer/154235") ||
+          (normalizedHref.includes("paid") && normalizedHref.includes("promotion"))
+        )
+      );
     }
   }
 
   function getPaidPromotionDisclosureTarget(target, card) {
-    const disclosure = target?.closest?.(
-      [
-        ".ytp-paid-content-overlay",
-        ".ytm-paid-content-overlay-renderer",
-        ".YtmPaidContentOverlayHost",
-        'a[href*="support.google.com/youtube" i][href*="p=ppp" i]',
-        'a[href*="support.google.com/youtube/answer/10588440" i]',
-        '[aria-label*="Includes paid promotion" i]',
-        '[title*="Includes paid promotion" i]'
-      ].join(", ")
-    );
+    const disclosure = target?.closest?.(PAID_PROMOTION_DISCLOSURE_SELECTOR);
 
     if (disclosure && card.contains(disclosure)) {
       return disclosure;
@@ -1411,6 +1444,58 @@
     return helpLink && card.contains(helpLink) && isPaidPromotionHelpUrl(helpLink.getAttribute("href"))
       ? helpLink
       : null;
+  }
+
+  function isPrimaryOrMiddleMouseActivation(event) {
+    return event.button === 0 || event.button === 1;
+  }
+
+  function getPaidPromotionDisclosureEventMatch(event) {
+    if (
+      !settings.openVideoOnThumbnailClick ||
+      reroutingThumbnailClick ||
+      event.defaultPrevented ||
+      !isPrimaryOrMiddleMouseActivation(event)
+    ) {
+      return null;
+    }
+
+    const target = getElementTarget(event.target);
+    if (isWithinFilterControls(target)) {
+      return null;
+    }
+
+    const card = getVideoCardTarget(target);
+
+    if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
+      return null;
+    }
+
+    const paidPromotionTarget = getPaidPromotionDisclosureTarget(target, card);
+    if (!paidPromotionTarget) {
+      return null;
+    }
+
+    return { card, link: getCardVideoLink(card) };
+  }
+
+  function handlePaidPromotionDisclosureMouseEvent(event) {
+    if (event.type === "auxclick" && event.button !== 1) {
+      return;
+    }
+
+    const match = getPaidPromotionDisclosureEventMatch(event);
+    if (!match) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    if ((event.type === "click" || event.type === "auxclick") && match.link) {
+      followVideoLink(match.link, event);
+    }
   }
 
   function isPointInsideElement(event, element) {
@@ -1481,13 +1566,14 @@
       return;
     }
 
-    const card = target?.closest?.("ytd-rich-item-renderer");
+    const directLink = getVideoLinkTarget(target);
+    const card = getVideoCardTarget(target, directLink);
 
     if (!card || (!card.closest(".my-youtube-styler-feed-page") && !getSupportedFeedKey())) {
       return;
     }
 
-    const link = getCardVideoLink(card);
+    const link = getCardVideoLink(card) || directLink;
     const thumbnailTarget = getCardThumbnailTarget(card) || link;
     const paidPromotionTarget = getPaidPromotionDisclosureTarget(target, card);
 
@@ -1959,6 +2045,12 @@
     }
   }
 
+  function addPaidPromotionDisclosureEventListeners(target) {
+    for (const eventName of ["pointerdown", "pointerup", "mousedown", "mouseup", "click", "auxclick"]) {
+      addCapturedEventListener(target, eventName, handlePaidPromotionDisclosureMouseEvent);
+    }
+  }
+
   function observeDocumentChanges(observer) {
     if (document.documentElement) {
       observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -1989,6 +2081,7 @@
   addCapturedEventListener(document, "visibilitychange", resetAltKeyState);
   addNotInterestedEventListeners(window);
   addNotInterestedEventListeners(document);
+  addPaidPromotionDisclosureEventListeners(window);
   addCapturedEventListener(window, "click", handleThumbnailVideoClick);
   addCapturedEventListener(window, "auxclick", handleThumbnailVideoClick);
   addCapturedEventListener(window, "popstate", scheduleApply);

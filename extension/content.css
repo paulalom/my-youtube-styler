@@ -122,23 +122,59 @@ html.my-youtube-styler-hide-miniplayer ytd-miniplayer {
   visibility: hidden !important;
 }
 
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytp-paid-content-overlay *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytm-paid-content-overlay-renderer,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .ytm-paid-content-overlay-renderer *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .YtmPaidContentOverlayHost,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer .YtmPaidContentOverlayHost *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paid_content" i]:not([href*="/watch" i]),
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="paidcontent" i]:not([href*="/watch" i]),
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="support.google.com/youtube" i][href*="p=ppp" i],
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="support.google.com/youtube" i][href*="p=ppp" i] *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="support.google.com/youtube/answer/10588440" i],
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer a[href*="support.google.com/youtube/answer/10588440" i] *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[aria-label*="Includes paid promotion" i],
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[aria-label*="Includes paid promotion" i] *,
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[title*="Includes paid promotion" i],
-html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page ytd-rich-item-renderer :not(a[href*="/watch" i])[title*="Includes paid promotion" i] * {
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page :is(ytd-rich-item-renderer, ytd-grid-video-renderer, ytd-video-renderer, yt-lockup-view-model) :is(
+  .ytp-paid-content-overlay,
+  .ytm-paid-content-overlay-renderer,
+  .YtmPaidContentOverlayHost,
+  yt-paid-content-overlay-renderer,
+  yt-paid-content-overlay-view-model,
+  ytm-paid-content-overlay-renderer,
+  [class*="paid-content-overlay" i],
+  [class*="paidcontentoverlay" i],
+  [class*="paid-promotion" i],
+  [class*="paidpromotion" i],
+  a[href*="paid_content" i]:not([href*="/watch" i]),
+  a[href*="paidcontent" i]:not([href*="/watch" i]),
+  a[href*="support.google.com/youtube" i][href*="p=ppp" i],
+  a[href*="support.google.com/youtube/answer/10588440" i],
+  a[href*="support.google.com/youtube/answer/154235" i],
+  a:not([href*="/watch" i]):has([aria-label*="Includes paid promotion" i]),
+  a:not([href*="/watch" i]):has([title*="Includes paid promotion" i]),
+  button:has([aria-label*="Includes paid promotion" i]),
+  button:has([title*="Includes paid promotion" i]),
+  [role="button"]:has([aria-label*="Includes paid promotion" i]),
+  [role="button"]:has([title*="Includes paid promotion" i]),
+  [aria-label*="Includes paid promotion" i],
+  [title*="Includes paid promotion" i]
+),
+html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page :is(ytd-rich-item-renderer, ytd-grid-video-renderer, ytd-video-renderer, yt-lockup-view-model) :is(
+  .ytp-paid-content-overlay,
+  .ytm-paid-content-overlay-renderer,
+  .YtmPaidContentOverlayHost,
+  yt-paid-content-overlay-renderer,
+  yt-paid-content-overlay-view-model,
+  ytm-paid-content-overlay-renderer,
+  [class*="paid-content-overlay" i],
+  [class*="paidcontentoverlay" i],
+  [class*="paid-promotion" i],
+  [class*="paidpromotion" i],
+  a[href*="paid_content" i]:not([href*="/watch" i]),
+  a[href*="paidcontent" i]:not([href*="/watch" i]),
+  a[href*="support.google.com/youtube" i][href*="p=ppp" i],
+  a[href*="support.google.com/youtube/answer/10588440" i],
+  a[href*="support.google.com/youtube/answer/154235" i],
+  a:not([href*="/watch" i]):has([aria-label*="Includes paid promotion" i]),
+  a:not([href*="/watch" i]):has([title*="Includes paid promotion" i]),
+  button:has([aria-label*="Includes paid promotion" i]),
+  button:has([title*="Includes paid promotion" i]),
+  [role="button"]:has([aria-label*="Includes paid promotion" i]),
+  [role="button"]:has([title*="Includes paid promotion" i]),
+  [aria-label*="Includes paid promotion" i],
+  [title*="Includes paid promotion" i]
+) * {
+  display: none !important;
   pointer-events: none !important;
+  visibility: hidden !important;
 }
 
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-playlist-renderer),

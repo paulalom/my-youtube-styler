@@ -14,7 +14,7 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Adds minimum and maximum view-count filters from 1K through 1B views.
 - Optionally auto-remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Lets you Alt+click a Home or Subscriptions feed video to add it to a local not interested list and hide it until that list is cleared.
-- Routes thumbnail-overlay clicks, including paid-promotion overlays, to the video page.
+- Hides paid-promotion thumbnail overlays and routes thumbnail-overlay clicks to the video page.
 - Hides Shorts, topic shelves, YouTube featured shelves, playlists, Playables, Subscriptions Latest/Most relevant sections, YouTube's bottom-right miniplayer, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
   - Compact thumbnails, icons, and text
