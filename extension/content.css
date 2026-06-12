@@ -89,7 +89,8 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
   width: 100% !important;
 }
 
-html.my-youtube-styler-home-videos-only .my-youtube-styler-feed-page[data-my-youtube-styler-feed="home"] ytd-rich-section-renderer {
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-section-renderer,
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/shorts"]) {
   display: none !important;
 }
 
@@ -182,6 +183,14 @@ html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-pag
   visibility: hidden !important;
 }
 
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-playlist-renderer),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-grid-playlist-renderer),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-compact-playlist-renderer),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/playlist"]),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="/playlist?"]),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="list="]),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has([aria-label*="playlist" i]),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has([title*="playlist" i]),
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-playlist-renderer),
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-grid-playlist-renderer),
 html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-compact-playlist-renderer),
@@ -197,6 +206,10 @@ html.my-youtube-styler-hide-playlists .my-youtube-styler-feed-page ytd-rich-sect
   display: none !important;
 }
 
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-game-card-renderer),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(yt-game-card-view-model),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/playables"]),
+html.my-youtube-styler-feed-videos-only .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href*="/playables"]),
 html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(ytd-game-card-renderer),
 html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(yt-game-card-view-model),
 html.my-youtube-styler-hide-playables .my-youtube-styler-feed-page ytd-rich-item-renderer:has(a[href^="/playables"]),

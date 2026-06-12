@@ -75,7 +75,7 @@
     compactLayout: true,
     hidePaidVideos: true,
     hideShorts: true,
-    homeVideosOnly: true,
+    feedVideosOnly: true,
     hideYouMightLike: true,
     hideExploreMoreTopics: true,
     hideFeaturedShelves: true,
@@ -94,7 +94,7 @@
     compactLayout: "my-youtube-styler-compact",
     hidePaidVideos: "my-youtube-styler-hide-paid",
     hideShorts: "my-youtube-styler-hide-shorts",
-    homeVideosOnly: "my-youtube-styler-home-videos-only",
+    feedVideosOnly: "my-youtube-styler-feed-videos-only",
     hideYouMightLike: "my-youtube-styler-hide-you-might-like",
     hideExploreMoreTopics: "my-youtube-styler-hide-explore-more-topics",
     hideFeaturedShelves: "my-youtube-styler-hide-featured",
@@ -201,9 +201,19 @@
   }
 
   function normalizeSettings(rawSettings) {
+    const rawSettingsObject = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
+    const { homeVideosOnly, ...currentSettings } = rawSettingsObject;
+    const feedVideosOnly =
+      typeof currentSettings.feedVideosOnly === "boolean"
+        ? currentSettings.feedVideosOnly
+        : typeof homeVideosOnly === "boolean"
+          ? homeVideosOnly
+          : defaultSettings.feedVideosOnly;
+
     return {
       ...defaultSettings,
-      ...(rawSettings && typeof rawSettings === "object" ? rawSettings : {})
+      ...currentSettings,
+      feedVideosOnly
     };
   }
 
@@ -539,7 +549,7 @@
   }
 
   function applySubscriptionLatestSectionFilter(feedPage) {
-    if (!settings.hideSubscriptionLatestSections || !isSubscriptionsFeedPath()) {
+    if ((!settings.feedVideosOnly && !settings.hideSubscriptionLatestSections) || !isSubscriptionsFeedPath()) {
       clearSubscriptionLatestSectionFilter(feedPage);
       return;
     }

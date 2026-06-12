@@ -85,6 +85,18 @@ p {
   background: var(--hover);
 }
 
+.setting-group {
+  border-left: 2px solid var(--border);
+  display: grid;
+  gap: 2px;
+  margin: -2px 0 2px 8px;
+  padding-left: 6px;
+}
+
+.setting-group[hidden] {
+  display: none;
+}
+
 .setting__text {
   display: grid;
   gap: 3px;

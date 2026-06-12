@@ -9,7 +9,7 @@ const defaultSettings = {
   compactLayout: true,
   hidePaidVideos: true,
   hideShorts: true,
-  homeVideosOnly: true,
+  feedVideosOnly: true,
   hideYouMightLike: true,
   hideExploreMoreTopics: true,
   hideFeaturedShelves: true,
@@ -25,9 +25,19 @@ const defaultSettings = {
 };
 
 function normalizeSettings(rawSettings) {
+  const rawSettingsObject = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
+  const { homeVideosOnly, ...currentSettings } = rawSettingsObject;
+  const feedVideosOnly =
+    typeof currentSettings.feedVideosOnly === "boolean"
+      ? currentSettings.feedVideosOnly
+      : typeof homeVideosOnly === "boolean"
+        ? homeVideosOnly
+        : defaultSettings.feedVideosOnly;
+
   return {
     ...defaultSettings,
-    ...(rawSettings && typeof rawSettings === "object" ? rawSettings : {})
+    ...currentSettings,
+    feedVideosOnly
   };
 }
 
@@ -63,6 +73,16 @@ function applyToForm(settings) {
   for (const input of document.querySelectorAll("input[data-setting]")) {
     input.checked = Boolean(settings[input.dataset.setting]);
   }
+
+  syncVideosOnlyDependentSettings(settings);
+}
+
+function syncVideosOnlyDependentSettings(settings) {
+  const shouldHideDependentSettings = Boolean(settings.feedVideosOnly);
+
+  for (const group of document.querySelectorAll("[data-videos-only-dependent]")) {
+    group.hidden = shouldHideDependentSettings;
+  }
 }
 
 function applyVersionLabel() {
@@ -94,6 +114,7 @@ async function initializePopup() {
         [input.dataset.setting]: input.checked
       };
 
+      syncVideosOnlyDependentSettings(settings);
       await setStoredSettings(settings);
     });
   }
