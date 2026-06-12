@@ -9,6 +9,7 @@ const defaultSettings = {
   compactLayout: true,
   hidePaidVideos: true,
   hideShorts: true,
+  homeVideosOnly: true,
   hideYouMightLike: true,
   hideExploreMoreTopics: true,
   hideFeaturedShelves: true,

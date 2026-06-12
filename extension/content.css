@@ -89,6 +89,10 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
   width: 100% !important;
 }
 
+html.my-youtube-styler-home-videos-only .my-youtube-styler-feed-page[data-my-youtube-styler-feed="home"] ytd-rich-section-renderer {
+  display: none !important;
+}
+
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-reel-shelf-renderer),
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
 html.my-youtube-styler-hide-shorts .my-youtube-styler-feed-page ytd-rich-section-renderer:has(a[href^="/shorts"]) {
