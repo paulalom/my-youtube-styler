@@ -19,6 +19,7 @@ const defaultSettings = {
   hidePlaylists: true,
   hidePlayables: true,
   hideSubscriptionLatestSections: true,
+  subscriptionsRecentUnwatchedOnly: true,
   hideMiniplayer: true,
   rememberSeenVideos: false
 };

@@ -42,6 +42,8 @@
   const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
   const SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR = "data-my-youtube-styler-subscription-latest-section-hidden";
+  const SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR =
+    "data-my-youtube-styler-subscriptions-recent-unwatched-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
@@ -58,6 +60,7 @@
   const VIEW_TONE_MAX = 1_000_000;
   const AGE_TONE_MIN_MS = DAY;
   const AGE_TONE_MAX_MS = 31 * DAY;
+  const SUBSCRIPTIONS_RECENT_UNWATCHED_MAX_AGE_MS = 31 * DAY;
   const TONE_HUE_RED = 4;
   const TONE_HUE_GREEN = 132;
   const FILTER_CONTROL_INTERACTION_GRACE_MS = 1200;
@@ -82,6 +85,7 @@
     hidePlaylists: true,
     hidePlayables: true,
     hideSubscriptionLatestSections: true,
+    subscriptionsRecentUnwatchedOnly: true,
     hideMiniplayer: true,
     rememberSeenVideos: false
   };
@@ -139,6 +143,20 @@
     "ytd-shelf-renderer",
     "ytd-item-section-renderer",
     "ytd-expanded-shelf-contents-renderer"
+  ].join(", ");
+  const youtubeWatchedProgressSelector = [
+    "ytd-thumbnail-overlay-resume-playback-renderer",
+    "yt-thumbnail-overlay-progress-bar-view-model",
+    ".ytThumbnailOverlayProgressBarHost",
+    ".yt-thumbnail-overlay-progress-bar-view-model-wiz__progress"
+  ].join(", ");
+  const youtubeWatchedTextCandidateSelector = [
+    "ytd-thumbnail-overlay-resume-playback-renderer",
+    "ytd-thumbnail-overlay-playback-status-renderer",
+    "yt-thumbnail-overlay-badge-view-model",
+    "yt-thumbnail-overlay-progress-bar-view-model",
+    ".ytThumbnailOverlayBadgeHost",
+    ".ytThumbnailOverlayProgressBarHost"
   ].join(", ");
 
   let settings = { ...defaultSettings };
@@ -1042,6 +1060,54 @@
     return getCardBadgeTextCandidates(card).some((element) => isPaidBadgeText(element.textContent || ""));
   }
 
+  function isYouTubeWatchedText(text) {
+    const normalized = normalizeText(text).toLowerCase();
+
+    return (
+      /\bwatched\b/.test(normalized) ||
+      /\bresume (watching|playback|playing)\b/.test(normalized) ||
+      /\bcontinue watching\b/.test(normalized)
+    );
+  }
+
+  function getElementAccessibleText(element) {
+    return [
+      element.getAttribute("aria-label"),
+      element.getAttribute("title"),
+      element.textContent
+    ].filter(Boolean).join(" ");
+  }
+
+  function hasVisibleYouTubeWatchedProgress(card) {
+    for (const element of card.querySelectorAll(youtubeWatchedProgressSelector)) {
+      if (isVisibleElement(element)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function hasYouTubeWatchedIndicator(card) {
+    if (hasVisibleYouTubeWatchedProgress(card)) {
+      return true;
+    }
+
+    for (const element of card.querySelectorAll(youtubeWatchedTextCandidateSelector)) {
+      if (isYouTubeWatchedText(getElementAccessibleText(element))) {
+        return true;
+      }
+
+      for (const child of element.querySelectorAll("[aria-label], [title]")) {
+        if (isYouTubeWatchedText(getElementAccessibleText(child))) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   function getCardStylableMetadataCandidates(card) {
     return [
       ...card.querySelectorAll(
@@ -1923,6 +1989,32 @@
     }
   }
 
+  function clearSubscriptionsRecentUnwatchedFilter(feedPage) {
+    for (const card of feedPage.querySelectorAll(`[${SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR}]`)) {
+      card.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
+    }
+  }
+
+  function applySubscriptionsRecentUnwatchedFilter(feedPage) {
+    if (!settings.subscriptionsRecentUnwatchedOnly || !isSubscriptionsFeedPath()) {
+      clearSubscriptionsRecentUnwatchedFilter(feedPage);
+      return;
+    }
+
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+      const ageMs = getCardAgeMs(card);
+      const isOlderThanOneMonth =
+        ageMs !== null && ageMs > SUBSCRIPTIONS_RECENT_UNWATCHED_MAX_AGE_MS;
+      const shouldHide = isOlderThanOneMonth || hasYouTubeWatchedIndicator(card);
+
+      if (shouldHide) {
+        card.setAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR, "");
+      } else {
+        card.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
+      }
+    }
+  }
+
   function applySeenHistoryFilter(feedPage) {
     if (isPrivateContext) {
       disconnectSeenObserver();
@@ -2006,6 +2098,7 @@
     applyMetadataColoring(feedPage);
     applyDateEmphasis(feedPage);
     applyPaidVideoFilter(feedPage);
+    applySubscriptionsRecentUnwatchedFilter(feedPage);
     applyDateFilter(feedPage);
     applyViewFilter(feedPage);
     applySeenHistoryFilter(feedPage);
