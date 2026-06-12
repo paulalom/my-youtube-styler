@@ -15,7 +15,7 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Optionally auto-remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Lets you Alt+click a Home or Subscriptions feed video to add it to a local not interested list and hide it until that list is cleared.
 - Hides paid-promotion thumbnail overlays and routes thumbnail-overlay clicks to the video page.
-- Hides Shorts, topic shelves, YouTube featured shelves, playlists, Playables, Subscriptions Latest/Most relevant sections, YouTube's bottom-right miniplayer, "You might like" sections, and common paid/member-only badge variants.
+- Hides Shorts, topic shelves, YouTube featured sections, playlists, Playables, Subscriptions Latest/Most relevant sections, YouTube's bottom-right miniplayer, "You might like" sections, and common paid/member-only badge variants.
 - Adds toolbar popup toggles for:
   - Compact thumbnails, icons, and text
   - Color views and age
@@ -25,7 +25,7 @@ The extension runs only in your browser, stores settings locally, and does not m
   - Hide Shorts
   - Hide You might like sections
   - Hide Explore more topics
-  - Hide YouTube featured shelves
+  - Hide YouTube featured sections
   - Hide playlists
   - Hide Playables
   - Hide subscription Latest section

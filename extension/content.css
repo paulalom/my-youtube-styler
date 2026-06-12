@@ -112,7 +112,8 @@ html.my-youtube-styler-hide-explore-more-topics .my-youtube-styler-feed-page ytd
   display: none !important;
 }
 
-html.my-youtube-styler-hide-featured .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-brand-video-shelf-renderer) {
+html.my-youtube-styler-hide-featured .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-brand-video-shelf-renderer),
+html.my-youtube-styler-hide-featured .my-youtube-styler-feed-page ytd-rich-section-renderer:has(ytd-statement-banner-renderer) {
   display: none !important;
 }
 
