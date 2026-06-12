@@ -36,11 +36,11 @@ The extension is scoped to `https://www.youtube.com/*`. Its JavaScript only oper
 
 ## Examples
 
-Firefox v0.6.4 examples:
+Firefox v0.7.4 examples:
 
-![YouTube homepage with compact styling](examples/firefox-v0.6.4/homepage.PNG)
+![YouTube homepage with compact styling](examples/firefox-v0.7.4/homepage.PNG)
 
-![My YouTube Styler options popup](examples/firefox-v0.6.4/styler-options.PNG)
+![My YouTube Styler options popup](examples/firefox-v0.7.4/styler-options.PNG)
 
 ## Install In Firefox
 
