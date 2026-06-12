@@ -1,6 +1,6 @@
 {
   "name": "my-youtube-styler",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "private": true,
   "description": "Local YouTube feed styling and filtering tweaks.",
   "scripts": {
