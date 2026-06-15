@@ -128,10 +128,23 @@ html.my-youtube-styler-hide-miniplayer ytd-miniplayer {
   visibility: hidden !important;
 }
 
+#video-preview ytm-paid-content-overlay-renderer,
+#video-preview .ytmPaidContentOverlayHost,
+#video-preview a.ytmPaidContentOverlayLink[href*="p=ppp"],
+#video-preview a[href*="support.google.com/youtube" i][href*="p=ppp" i],
+#video-preview .ytmPaidContentOverlayText {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
 html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-page :is(ytd-rich-item-renderer, ytd-grid-video-renderer, ytd-video-renderer, yt-lockup-view-model) :is(
   .ytp-paid-content-overlay,
   .ytm-paid-content-overlay-renderer,
   .YtmPaidContentOverlayHost,
+  .ytmPaidContentOverlayHost,
+  .ytmPaidContentOverlayLink,
+  .ytmPaidContentOverlayText,
   yt-paid-content-overlay-renderer,
   yt-paid-content-overlay-view-model,
   ytm-paid-content-overlay-renderer,
@@ -157,6 +170,9 @@ html.my-youtube-styler-open-video-on-thumbnail-click .my-youtube-styler-feed-pag
   .ytp-paid-content-overlay,
   .ytm-paid-content-overlay-renderer,
   .YtmPaidContentOverlayHost,
+  .ytmPaidContentOverlayHost,
+  .ytmPaidContentOverlayLink,
+  .ytmPaidContentOverlayText,
   yt-paid-content-overlay-renderer,
   yt-paid-content-overlay-view-model,
   ytm-paid-content-overlay-renderer,
