@@ -98,7 +98,7 @@ New-Item -ItemType Directory -Path signed-releases/firefox -Force
 Copy-Item web-ext-artifacts/*.xpi signed-releases/firefox/
 ```
 
-For automatic self-hosted updates, Firefox reads `updates/firefox.json` from the raw GitHub URL in `extension/manifest.json`. Before signing a release, update that JSON file to the new version and GitHub release asset URL. After signing, upload the signed `.xpi` to the matching GitHub release using the exact filename from `update_link`.
+For automatic self-hosted updates, Firefox reads `updates/firefox.json` from the raw GitHub URL in `extension/manifest.json`. After signing or uploading a release, update that JSON file to the new version and signed `.xpi` download URL from AMO Developer Hub.
 
 The signed Firefox v0.7.2 XPI was saved locally at `signed-releases/firefox/d286352590454dc89781-0.7.2.xpi`.
 
