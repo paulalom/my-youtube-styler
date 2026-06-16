@@ -3,8 +3,8 @@
     "my-youtube-styler@local": {
       "updates": [
         {
-          "version": "0.7.4",
-          "update_link": "https://github.com/paulalom/my-youtube-styler/releases/download/v0.7.4/my_youtube_styler-0.7.4.xpi"
+          "version": "0.7.5",
+          "update_link": "https://github.com/paulalom/my-youtube-styler/releases/download/v0.7.5/my_youtube_styler-0.7.5.xpi"
         }
       ]
     }
