@@ -154,8 +154,8 @@
     "ytd-item-section-renderer",
     "ytd-expanded-shelf-contents-renderer"
   ].join(", ");
+  const youtubeResumePlaybackSelector = "ytd-thumbnail-overlay-resume-playback-renderer";
   const youtubeWatchedProgressSelector = [
-    "ytd-thumbnail-overlay-resume-playback-renderer",
     "yt-thumbnail-overlay-progress-bar-view-model",
     ".ytThumbnailOverlayProgressBarHost",
     ".yt-thumbnail-overlay-progress-bar-view-model-wiz__progress"
@@ -1099,13 +1099,31 @@
   }
 
   function hasVisibleYouTubeWatchedProgress(card) {
-    for (const element of card.querySelectorAll(youtubeWatchedProgressSelector)) {
+    for (const element of card.querySelectorAll(youtubeResumePlaybackSelector)) {
       if (isVisibleElement(element)) {
         return true;
       }
     }
 
+    for (const element of card.querySelectorAll(youtubeWatchedProgressSelector)) {
+      if (isVisibleElement(element) && !isTransientHoverPreviewProgress(card, element)) {
+        return true;
+      }
+    }
+
     return false;
+  }
+
+  function isTransientHoverPreviewProgress(card, element) {
+    return Boolean(element.closest("#video-preview")) || isElementHovered(card);
+  }
+
+  function isElementHovered(element) {
+    try {
+      return element.matches(":hover");
+    } catch {
+      return false;
+    }
   }
 
   function hasYouTubeWatchedIndicator(card) {
