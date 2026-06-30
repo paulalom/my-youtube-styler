@@ -420,7 +420,7 @@
       return videoIds;
     }
 
-    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+    for (const card of getFeedVideoCards(feedPage)) {
       const videoId = getCardVideoId(card);
 
       if (videoId) {
@@ -513,6 +513,24 @@
 
     const style = window.getComputedStyle(element);
     return style.display !== "none" && style.visibility !== "hidden";
+  }
+
+  function getFeedVideoCards(feedPage) {
+    return [...feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)].filter((card) => {
+      for (const selector of VIDEO_CARD_SELECTORS) {
+        const parentCard = card.parentElement?.closest(selector);
+
+        if (parentCard && feedPage.contains(parentCard)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  function isFeedVideoHoverActive(feedPage) {
+    return getFeedVideoCards(feedPage).some(isElementHovered);
   }
 
   function normalizeSubscriptionLatestSectionLabel(value) {
@@ -1100,13 +1118,13 @@
 
   function hasVisibleYouTubeWatchedProgress(card) {
     for (const element of card.querySelectorAll(youtubeResumePlaybackSelector)) {
-      if (isVisibleElement(element)) {
+      if (isVisibleElement(element) && !isTransientHoverPreviewIndicator(card, element)) {
         return true;
       }
     }
 
     for (const element of card.querySelectorAll(youtubeWatchedProgressSelector)) {
-      if (isVisibleElement(element) && !isTransientHoverPreviewProgress(card, element)) {
+      if (isVisibleElement(element) && !isTransientHoverPreviewIndicator(card, element)) {
         return true;
       }
     }
@@ -1114,7 +1132,7 @@
     return false;
   }
 
-  function isTransientHoverPreviewProgress(card, element) {
+  function isTransientHoverPreviewIndicator(card, element) {
     return Boolean(element.closest("#video-preview")) || isElementHovered(card);
   }
 
@@ -1132,11 +1150,19 @@
     }
 
     for (const element of card.querySelectorAll(youtubeWatchedTextCandidateSelector)) {
+      if (isTransientHoverPreviewIndicator(card, element)) {
+        continue;
+      }
+
       if (isYouTubeWatchedText(getElementAccessibleText(element))) {
         return true;
       }
 
       for (const child of element.querySelectorAll("[aria-label], [title]")) {
+        if (isTransientHoverPreviewIndicator(card, child)) {
+          continue;
+        }
+
         if (isYouTubeWatchedText(getElementAccessibleText(child))) {
           return true;
         }
@@ -1439,7 +1465,7 @@
 
     const emphasizedElements = new Set();
 
-    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+    for (const card of getFeedVideoCards(feedPage)) {
       for (const element of getCardStylableMetadataCandidates(card)) {
         if (applyDateTextExpansion(element)) {
           emphasizedElements.add(element);
@@ -2059,7 +2085,20 @@
       return;
     }
 
-    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+    if (isFeedVideoHoverActive(feedPage)) {
+      return;
+    }
+
+    const cards = getFeedVideoCards(feedPage);
+    const cardSet = new Set(cards);
+
+    for (const element of feedPage.querySelectorAll(`[${SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR}]`)) {
+      if (!cardSet.has(element)) {
+        element.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
+      }
+    }
+
+    for (const card of cards) {
       const ageMs = getCardAgeMs(card);
       const isOlderThanOneMonth =
         ageMs !== null && ageMs > SUBSCRIPTIONS_RECENT_UNWATCHED_MAX_AGE_MS;
@@ -2077,7 +2116,7 @@
     if (isPrivateContext) {
       disconnectSeenObserver();
 
-      for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+      for (const card of feedPage.querySelectorAll(`[${SEEN_HIDDEN_ATTR}]`)) {
         card.removeAttribute(SEEN_HIDDEN_ATTR);
       }
 
@@ -2090,7 +2129,16 @@
       disconnectSeenObserver();
     }
 
-    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
+    const cards = getFeedVideoCards(feedPage);
+    const cardSet = new Set(cards);
+
+    for (const element of feedPage.querySelectorAll(`[${SEEN_HIDDEN_ATTR}]`)) {
+      if (!cardSet.has(element)) {
+        element.removeAttribute(SEEN_HIDDEN_ATTR);
+      }
+    }
+
+    for (const card of cards) {
       const videoId = getCardVideoId(card);
 
       if (!videoId) {
