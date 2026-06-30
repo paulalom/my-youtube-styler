@@ -33,7 +33,21 @@ html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-render
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer h3,
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelHeadingReset {
   display: block !important;
+  height: calc(4.4rem - 4pt) !important;
+  max-height: calc(4.4rem - 4pt) !important;
   min-height: calc(4.4rem - 4pt) !important;
+  overflow: hidden !important;
+}
+
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #video-title,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #video-title-link,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelTitle,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytLockupMetadataViewModelTitle .ytAttributedStringHost {
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+  display: -webkit-box !important;
+  max-height: calc(4.4rem - 4pt) !important;
+  overflow: hidden !important;
 }
 
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer ytd-channel-name,
@@ -72,18 +86,46 @@ html.my-youtube-styler-emphasize-dates .my-youtube-styler-feed-page [data-my-you
   font-weight: 700 !important;
 }
 
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer ytd-channel-name,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line {
+  display: block !important;
+  max-height: calc(2rem - 2pt) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer ytd-channel-name *,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer #metadata-line span {
+  white-space: nowrap !important;
+}
+
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a),
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon),
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
-  align-items: center !important;
-  display: flex !important;
-  flex-wrap: wrap !important;
+  display: block !important;
+  max-height: calc(4rem - 4pt) !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelMetadataText,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelMetadataText *,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon) > .ytContentMetadataViewModelMetadataText,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon) > .ytContentMetadataViewModelMetadataText *,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) > .ytContentMetadataViewModelMetadataText,
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) > .ytContentMetadataViewModelMetadataText * {
+  white-space: nowrap !important;
 }
 
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelLeadingIcon),
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]),
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelLeadingIcon),
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
+  display: block !important;
   flex: 0 0 100% !important;
   font-size: 0 !important;
   height: 0 !important;
