@@ -399,8 +399,8 @@ html.my-youtube-styler-hide-paid .my-youtube-styler-feed-page ytd-rich-item-rend
   box-sizing: border-box;
   display: none;
   justify-content: flex-end;
-  min-height: 56px;
-  padding: 0 24px;
+  min-height: 100px;
+  padding: 8px 24px 6px;
   position: sticky;
   top: var(--ytd-masthead-height, 56px);
   width: 100%;
