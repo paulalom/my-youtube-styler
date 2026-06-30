@@ -12,7 +12,6 @@ The extension runs only in your browser, stores settings locally, and does not m
 - Optionally spells out video age units, with week, month, and year ages shown in bold.
 - Adds date filters for videos newer than 7 days, 1 month, 1 year, or 5 years.
 - Adds minimum and maximum view-count filters from 1K through 1B views.
-- Optionally limits Subscriptions to videos newer than 1 month, and hides videos YouTube itself marks as watched when that signal is available.
 - Optionally auto-remembers videos you have already seen and hides them on the next feed load or refresh, with a 7-day rolling history.
 - Lets you Alt+click a Home or Subscriptions feed video to add it to a local not interested list and hide it until that list is cleared.
 - Hides paid-promotion thumbnail overlays and routes thumbnail-overlay clicks to the video page.
@@ -26,7 +25,6 @@ The extension runs only in your browser, stores settings locally, and does not m
   - Open video from thumbnail clicks
   - Feed videos only
   - Detailed feed cleanup toggles when Feed videos only is off
-  - Subscriptions recent unwatched only
   - Hide miniplayer
   - Auto-remember seen feed videos
 
@@ -114,7 +112,6 @@ You can also create an unsigned local package for inspection with `npm run build
 - Settings are stored in Firefox extension storage.
 - Selected inline date/view filters are stored only in the YouTube tab session.
 - Auto seen-video history is opt-in. When enabled, it stores video IDs with last-seen timestamps, prunes entries older than 7 days, and is never uploaded anywhere.
-- The Subscriptions recent unwatched toggle does not use local seen-video history; it only reads visible age text and YouTube's own watched/resume indicators on feed cards.
 - Local not interested videos are stored separately when you Alt+click a feed video, remain hidden until you clear that list, and are never uploaded anywhere.
 - The local not interested list does not use YouTube's own Not interested action or send feedback to YouTube.
 - Seen-video history is disabled in private browsing windows, even when the setting is enabled.
@@ -123,5 +120,4 @@ You can also create an unsigned local package for inspection with `npm run build
 
 - The date filter reads the visible relative age text on feed video cards, such as `3 hours ago` or `2 weeks ago`.
 - The view filters read visible feed metadata, such as `71 views`, `1.5K views`, or `1.5 million views`.
-- The Subscriptions recent unwatched toggle hides watched videos only when YouTube exposes a watched, resume, or thumbnail progress indicator.
 - Videos with unrecognized or missing age/view text are left visible.

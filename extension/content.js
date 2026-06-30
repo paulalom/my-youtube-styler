@@ -52,8 +52,6 @@
   const PAID_HIDDEN_ATTR = "data-my-youtube-styler-paid-hidden";
   const SEEN_HIDDEN_ATTR = "data-my-youtube-styler-seen-hidden";
   const SUBSCRIPTION_LATEST_SECTION_HIDDEN_ATTR = "data-my-youtube-styler-subscription-latest-section-hidden";
-  const SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR =
-    "data-my-youtube-styler-subscriptions-recent-unwatched-hidden";
   const DATE_STORAGE_KEY = "myYouTubeStylerDateFilter";
   const MIN_VIEWS_STORAGE_KEY = "myYouTubeStylerMinViewsFilter";
   const MAX_VIEWS_STORAGE_KEY = "myYouTubeStylerMaxViewsFilter";
@@ -70,7 +68,6 @@
   const VIEW_TONE_MAX = 1_000_000;
   const AGE_TONE_MIN_MS = DAY;
   const AGE_TONE_MAX_MS = 31 * DAY;
-  const SUBSCRIPTIONS_RECENT_UNWATCHED_MAX_AGE_MS = 31 * DAY;
   const TONE_HUE_RED = 4;
   const TONE_HUE_GREEN = 132;
   const FILTER_CONTROL_INTERACTION_GRACE_MS = 1200;
@@ -95,7 +92,6 @@
     hidePlaylists: true,
     hidePlayables: true,
     hideSubscriptionLatestSections: true,
-    subscriptionsRecentUnwatchedOnly: true,
     hideMiniplayer: true,
     rememberSeenVideos: false
   };
@@ -154,20 +150,6 @@
     "ytd-item-section-renderer",
     "ytd-expanded-shelf-contents-renderer"
   ].join(", ");
-  const youtubeResumePlaybackSelector = "ytd-thumbnail-overlay-resume-playback-renderer";
-  const youtubeWatchedProgressSelector = [
-    "yt-thumbnail-overlay-progress-bar-view-model",
-    ".ytThumbnailOverlayProgressBarHost",
-    ".yt-thumbnail-overlay-progress-bar-view-model-wiz__progress"
-  ].join(", ");
-  const youtubeWatchedTextCandidateSelector = [
-    "ytd-thumbnail-overlay-resume-playback-renderer",
-    "ytd-thumbnail-overlay-playback-status-renderer",
-    "yt-thumbnail-overlay-badge-view-model",
-    "yt-thumbnail-overlay-progress-bar-view-model",
-    ".ytThumbnailOverlayBadgeHost",
-    ".ytThumbnailOverlayProgressBarHost"
-  ].join(", ");
 
   let settings = { ...defaultSettings };
   let selectedDateFilter = readStoredChoice(DATE_STORAGE_KEY, dateFilters, "all");
@@ -212,7 +194,7 @@
 
   function normalizeSettings(rawSettings) {
     const rawSettingsObject = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
-    const { homeVideosOnly, ...currentSettings } = rawSettingsObject;
+    const { homeVideosOnly, subscriptionsRecentUnwatchedOnly, ...currentSettings } = rawSettingsObject;
     const feedVideosOnly =
       typeof currentSettings.feedVideosOnly === "boolean"
         ? currentSettings.feedVideosOnly
@@ -420,7 +402,7 @@
       return videoIds;
     }
 
-    for (const card of getFeedVideoCards(feedPage)) {
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
       const videoId = getCardVideoId(card);
 
       if (videoId) {
@@ -513,24 +495,6 @@
 
     const style = window.getComputedStyle(element);
     return style.display !== "none" && style.visibility !== "hidden";
-  }
-
-  function getFeedVideoCards(feedPage) {
-    return [...feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)].filter((card) => {
-      for (const selector of VIDEO_CARD_SELECTORS) {
-        const parentCard = card.parentElement?.closest(selector);
-
-        if (parentCard && feedPage.contains(parentCard)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }
-
-  function isFeedVideoHoverActive(feedPage) {
-    return getFeedVideoCards(feedPage).some(isElementHovered);
   }
 
   function normalizeSubscriptionLatestSectionLabel(value) {
@@ -1098,80 +1062,6 @@
     return getCardBadgeTextCandidates(card).some((element) => isPaidBadgeText(element.textContent || ""));
   }
 
-  function isYouTubeWatchedText(text) {
-    const normalized = normalizeText(text).toLowerCase();
-
-    return (
-      /\bwatched\b/.test(normalized) ||
-      /\bresume (watching|playback|playing)\b/.test(normalized) ||
-      /\bcontinue watching\b/.test(normalized)
-    );
-  }
-
-  function getElementAccessibleText(element) {
-    return [
-      element.getAttribute("aria-label"),
-      element.getAttribute("title"),
-      element.textContent
-    ].filter(Boolean).join(" ");
-  }
-
-  function hasVisibleYouTubeWatchedProgress(card) {
-    for (const element of card.querySelectorAll(youtubeResumePlaybackSelector)) {
-      if (isVisibleElement(element) && !isTransientHoverPreviewIndicator(card, element)) {
-        return true;
-      }
-    }
-
-    for (const element of card.querySelectorAll(youtubeWatchedProgressSelector)) {
-      if (isVisibleElement(element) && !isTransientHoverPreviewIndicator(card, element)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  function isTransientHoverPreviewIndicator(card, element) {
-    return Boolean(element.closest("#video-preview")) || isElementHovered(card);
-  }
-
-  function isElementHovered(element) {
-    try {
-      return element.matches(":hover");
-    } catch {
-      return false;
-    }
-  }
-
-  function hasYouTubeWatchedIndicator(card) {
-    if (hasVisibleYouTubeWatchedProgress(card)) {
-      return true;
-    }
-
-    for (const element of card.querySelectorAll(youtubeWatchedTextCandidateSelector)) {
-      if (isTransientHoverPreviewIndicator(card, element)) {
-        continue;
-      }
-
-      if (isYouTubeWatchedText(getElementAccessibleText(element))) {
-        return true;
-      }
-
-      for (const child of element.querySelectorAll("[aria-label], [title]")) {
-        if (isTransientHoverPreviewIndicator(card, child)) {
-          continue;
-        }
-
-        if (isYouTubeWatchedText(getElementAccessibleText(child))) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   function getCardStylableMetadataCandidates(card) {
     return [
       ...card.querySelectorAll(
@@ -1465,7 +1355,7 @@
 
     const emphasizedElements = new Set();
 
-    for (const card of getFeedVideoCards(feedPage)) {
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
       for (const element of getCardStylableMetadataCandidates(card)) {
         if (applyDateTextExpansion(element)) {
           emphasizedElements.add(element);
@@ -2073,50 +1963,11 @@
     }
   }
 
-  function clearSubscriptionsRecentUnwatchedFilter(feedPage) {
-    for (const card of feedPage.querySelectorAll(`[${SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR}]`)) {
-      card.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
-    }
-  }
-
-  function applySubscriptionsRecentUnwatchedFilter(feedPage) {
-    if (!settings.subscriptionsRecentUnwatchedOnly || !isSubscriptionsFeedPath()) {
-      clearSubscriptionsRecentUnwatchedFilter(feedPage);
-      return;
-    }
-
-    if (isFeedVideoHoverActive(feedPage)) {
-      return;
-    }
-
-    const cards = getFeedVideoCards(feedPage);
-    const cardSet = new Set(cards);
-
-    for (const element of feedPage.querySelectorAll(`[${SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR}]`)) {
-      if (!cardSet.has(element)) {
-        element.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
-      }
-    }
-
-    for (const card of cards) {
-      const ageMs = getCardAgeMs(card);
-      const isOlderThanOneMonth =
-        ageMs !== null && ageMs > SUBSCRIPTIONS_RECENT_UNWATCHED_MAX_AGE_MS;
-      const shouldHide = isOlderThanOneMonth || hasYouTubeWatchedIndicator(card);
-
-      if (shouldHide) {
-        card.setAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR, "");
-      } else {
-        card.removeAttribute(SUBSCRIPTIONS_RECENT_UNWATCHED_HIDDEN_ATTR);
-      }
-    }
-  }
-
   function applySeenHistoryFilter(feedPage) {
     if (isPrivateContext) {
       disconnectSeenObserver();
 
-      for (const card of feedPage.querySelectorAll(`[${SEEN_HIDDEN_ATTR}]`)) {
+      for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
         card.removeAttribute(SEEN_HIDDEN_ATTR);
       }
 
@@ -2129,16 +1980,7 @@
       disconnectSeenObserver();
     }
 
-    const cards = getFeedVideoCards(feedPage);
-    const cardSet = new Set(cards);
-
-    for (const element of feedPage.querySelectorAll(`[${SEEN_HIDDEN_ATTR}]`)) {
-      if (!cardSet.has(element)) {
-        element.removeAttribute(SEEN_HIDDEN_ATTR);
-      }
-    }
-
-    for (const card of cards) {
+    for (const card of feedPage.querySelectorAll(VIDEO_CARD_SELECTOR)) {
       const videoId = getCardVideoId(card);
 
       if (!videoId) {
@@ -2204,7 +2046,6 @@
     applyMetadataColoring(feedPage);
     applyDateEmphasis(feedPage);
     applyPaidVideoFilter(feedPage);
-    applySubscriptionsRecentUnwatchedFilter(feedPage);
     applyDateFilter(feedPage);
     applyViewFilter(feedPage);
     applySeenHistoryFilter(feedPage);

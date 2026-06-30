@@ -19,14 +19,13 @@ const defaultSettings = {
   hidePlaylists: true,
   hidePlayables: true,
   hideSubscriptionLatestSections: true,
-  subscriptionsRecentUnwatchedOnly: true,
   hideMiniplayer: true,
   rememberSeenVideos: false
 };
 
 function normalizeSettings(rawSettings) {
   const rawSettingsObject = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
-  const { homeVideosOnly, ...currentSettings } = rawSettingsObject;
+  const { homeVideosOnly, subscriptionsRecentUnwatchedOnly, ...currentSettings } = rawSettingsObject;
   const feedVideosOnly =
     typeof currentSettings.feedVideosOnly === "boolean"
       ? currentSettings.feedVideosOnly
