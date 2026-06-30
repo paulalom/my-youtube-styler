@@ -72,14 +72,18 @@ html.my-youtube-styler-emphasize-dates .my-youtube-styler-feed-page [data-my-you
   font-weight: 700 !important;
 }
 
-html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a),
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon),
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
   align-items: center !important;
   display: flex !important;
   flex-wrap: wrap !important;
 }
 
 html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelLeadingIcon),
-html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText:first-child a) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]),
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelLeadingIcon) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelLeadingIcon),
+html.my-youtube-styler-compact .my-youtube-styler-feed-page ytd-rich-item-renderer .ytContentMetadataViewModelMetadataRow:has(> .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) > .ytContentMetadataViewModelDelimiter:has(+ .ytContentMetadataViewModelMetadataText[aria-label*="view" i]) {
   flex: 0 0 100% !important;
   font-size: 0 !important;
   height: 0 !important;
